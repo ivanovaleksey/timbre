@@ -1,0 +1,8 @@
+[[package]]
+name = "timbre"
+version = "0.1.0"
+
+[[package]]
+name = "timbre-gtk"
+version = "0.1.0"
+

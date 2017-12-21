@@ -4,3 +4,7 @@ version = "0.1.0"
 authors = ["Aleksey Ivanov <ialexxei@gmail.com>"]
 
 [dependencies]
+
+[dependencies.gtk]
+features = ["v3_18"]
+version = "0.3.0"

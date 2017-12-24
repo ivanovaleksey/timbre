@@ -10,8 +10,6 @@ impl Content {
         let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
         let stack = gtk::Stack::new();
-        let checkbutton = gtk::CheckButton::new_with_label("Click me!");
-        stack.add_titled(&checkbutton, "check", "Check Button");
 
         let label_1 = gtk::Label::new("Test label");
         stack.add_titled(&label_1, "label_1", "A label #1");

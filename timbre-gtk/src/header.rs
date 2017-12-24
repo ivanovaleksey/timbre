@@ -1,19 +1,17 @@
-use gtk::{HeaderBar, HeaderBarExt, Stack, StackSwitcher, StackSwitcherExt};
+use gtk::{self, HeaderBarExt, StackSwitcherExt};
 
 pub struct Header {
-    pub container: HeaderBar,
-    stack_switch: StackSwitcher,
+    pub container: gtk::HeaderBar,
+    stack_switch: gtk::StackSwitcher,
 }
 
 impl Header {
     pub fn new() -> Header {
-        let container = HeaderBar::new();
-        container.set_title("Timbre");
+        let container = gtk::HeaderBar::new();
+        let stack_switch = gtk::StackSwitcher::new();
+
+        container.set_custom_title(&stack_switch);
         container.set_show_close_button(true);
-
-        let stack_switch = StackSwitcher::new();
-
-        container.pack_start(&stack_switch);
 
         Header {
             container,
@@ -21,7 +19,7 @@ impl Header {
         }
     }
 
-    pub fn set_stack(&self, stack: &Stack) {
+    pub fn set_stack(&self, stack: &gtk::Stack) {
         self.stack_switch.set_stack(stack);
     }
 }

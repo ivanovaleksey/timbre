@@ -34,7 +34,7 @@ impl<'a> State<'a> {
         };
 
         state.generate_notes();
-        state.next_note();
+        // state.next_note();
 
         state
     }
@@ -65,7 +65,8 @@ impl<'a> State<'a> {
         self.notes.dedup();
     }
 
-    fn next_note(&mut self) -> Option<Note> {
+    pub fn next_note(&mut self) -> Option<Note> {
+        println!("next note is called");
         self.drop_note();
         self.note = thread_rng().choose(&self.notes).map(|n| *n);
         self.note

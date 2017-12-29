@@ -1,7 +1,11 @@
+use ears::{AudioController, Sound};
+use std::thread;
+use std::sync::mpsc;
+
 use self::state::State;
 use self::note::{Note, Octave, Tonality};
 
-mod note;
+pub mod note;
 mod state;
 
 lazy_static! {
@@ -59,36 +63,37 @@ pub struct Exercise {
     octaves: Vec<Octave>,
 }
 
-struct Controller<'a> {
+type Sample = String;
+
+#[derive(Debug)]
+pub struct Controller<'a> {
+    gramophone: mpsc::Sender<Sample>,
     state: Option<State<'a>>,
     tonality: Option<Tonality>,
 }
 
 impl<'a> Controller<'a> {
-    fn check_answer() {}
+    pub fn new() -> Controller<'a> {
+        let (tx, rx) = mpsc::channel::<Sample>();
 
-    fn play_sequence() {}
-
-    fn play_note(&self, note: Note) {}
-
-    fn repeat_note(&self) {
-        if let Some(ref s) = self.state {
-            if let Some(n) = s.note {
-                self.play_note(n);
+        thread::spawn(move || {
+            for path in rx.iter() {
+                let sample = &path;
+                let mut snd = Sound::new(sample).unwrap();
+                snd.play();
+                while snd.is_playing() {}
             }
-        }
-    }
-}
+        });
 
-impl<'a> Controller<'a> {
-    fn new() -> Controller<'a> {
         Controller {
+            gramophone: tx,
             state: None,
+            // TODO: is it required?
             tonality: None,
         }
     }
 
-    fn new_game(&mut self, tonality: Tonality) {
+    pub fn new_game(&mut self, tonality: Tonality) {
         let exersice = EXERSICES.first().unwrap();
         let state = State::new(tonality, exersice);
         self.state = Some(state);
@@ -97,4 +102,53 @@ impl<'a> Controller<'a> {
     fn load_game() {}
 
     fn save_game() {}
+}
+
+impl<'a> Controller<'a> {
+    fn check_answer() {}
+
+    fn play_sample(&self, sample: Sample) {
+        println!("{}\n", sample);
+        self.gramophone.send(sample);
+    }
+
+    pub fn play_sequence(&self) {
+        self.play_sample("/Users/aleksey/Downloads/Timbre/Cmaj.ogg".to_string());
+    }
+
+    pub fn play_note(&mut self, note: Option<Note>) {
+        println!("NOTE: {:?}", note);
+
+        match note {
+            Some(n) => self.play_sample(n.sample()),
+            None => {
+                let note = match self.state {
+                    Some(ref mut s) => s.next_note(),
+                    None => None
+                };
+
+                match note {
+                    Some(n) => {
+                        println!("NEXT NOTE: {:?}", n);
+                        self.play_sample(n.sample());
+                    },
+                    None => println!("Nothing to play\n"),
+                }
+            }
+        }
+    }
+
+    pub fn repeat_note(&self) {
+        self.current_note().map(|note| {
+            println!("REPEAT NOTE: {:?}", note);
+            self.play_sample(note.sample())}
+        );
+    }
+
+    fn current_note(&self) -> Option<Note> {
+        match self.state {
+            Some(ref state) => state.note,
+            None => None
+        }
+    }
 }

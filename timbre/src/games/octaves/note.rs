@@ -1,4 +1,4 @@
-use ears::{AudioController, Sound};
+use super::Sample;
 
 lazy_static! {
     pub static ref GAMUTS: Vec<Gamut> = {
@@ -57,7 +57,7 @@ lazy_static! {
         v
     };
 
-    static ref TONALITIES: Vec<Tonality> = {
+    pub static ref TONALITIES: Vec<Tonality> = {
         let mut v = Vec::new();
 
         v.push(Tonality(Pitch::C));
@@ -85,14 +85,23 @@ pub struct Note {
     pub pitch: Pitch,
 }
 
+impl Note {
+    // TODO: path to file
+    pub fn sample(&self) -> Sample {
+        let mut path = String::from("/Users/aleksey/Downloads/Timbre/");
+        path.push_str(&format!("{:?}{}.ogg", self.pitch, self.octave as u8));
+        path
+    }
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Octave {
-    Great,
-    Small,
-    First,
-    Second,
-    Third,
-    Fourth,
+    Great = 2,
+    Small = 3,
+    First = 4,
+    Second = 5,
+    Third = 6,
+    Fourth = 7,
 }
 
 impl Octave {
@@ -142,19 +151,4 @@ pub enum Pitch {
     Bflat,
     B,
     Bsharp,
-}
-
-impl Note {
-    // TODO: path to file
-    // TODO: separate thread
-    pub fn play(&self) {
-        // Create a new Sound.
-        let mut snd = Sound::new("path/to/my/sound.ogg").unwrap();
-
-        // Play the Sound
-        snd.play();
-
-        // Wait until the end of the sound
-        while snd.is_playing() {}
-    }
 }

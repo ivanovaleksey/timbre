@@ -1,0 +1,13 @@
+language: rust
+rust:
+  - nightly
+cache: cargo
+before_script:
+  - export PATH="$PATH:$HOME/.cargo/bin"
+  - cargo install -f rustfmt-nightly
+script:
+  - cargo fmt -- --write-mode=diff
+  - cargo build -p timbre
+  - cargo test -p timbre
+notifications:
+  email: false

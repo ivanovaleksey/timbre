@@ -3,6 +3,8 @@ rust:
   - nightly
 cache: cargo
 before_script:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libopenal-dev libsndfile1-dev
   - export PATH="$PATH:$HOME/.cargo/bin"
   - cargo install -f rustfmt-nightly
 script:

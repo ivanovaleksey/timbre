@@ -78,7 +78,7 @@ lazy_static! {
     };
 }
 
-// Repsent a pitch from a particular octave.
+// Represent a pitch from a particular octave.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Note {
     pub octave: Octave,

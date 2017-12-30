@@ -14,26 +14,26 @@ fn main() {
 
     controller.play_sequence();
 
-    controller.play_next_note(None);
+    controller.play_next_note();
     controller.repeat_note();
 
-    controller.play_next_note(None);
-    controller.play_next_note(None);
+    controller.play_next_note();
+    controller.play_next_note();
     controller.repeat_note();
 
-    controller.play_next_note(None);
-    controller.play_next_note(None);
+    controller.play_next_note();
+    controller.play_next_note();
     controller.repeat_note();
 
-    controller.play_next_note(None);
-    controller.play_next_note(None);
+    controller.play_next_note();
+    controller.play_next_note();
     controller.repeat_note();
 
-    controller.play_next_note(None);
-    controller.play_next_note(None);
+    controller.play_next_note();
+    controller.play_next_note();
     controller.repeat_note();
 
-    controller.play_next_note(None);
+    controller.play_next_note();
     controller.repeat_note();
 
     config_1.save();

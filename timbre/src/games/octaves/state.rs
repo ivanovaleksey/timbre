@@ -13,15 +13,12 @@ pub struct State<'a> {
     // Notes to play
     notes: Vec<Note>,
     // Right answered count
-    right_count: u8,
+    pub right_count: u8,
     // Total played count
-    total_count: u8,
+    pub total_count: u8,
 }
 
 impl<'a> State<'a> {
-    // TODO: update counters
-    // TODO: load/save on disk
-
     pub fn new(tonality: Tonality, exersice: &Exercise) -> State {
         let mut state = State {
             tonality,
@@ -35,6 +32,12 @@ impl<'a> State<'a> {
         state.generate_notes();
         state
     }
+
+    // TODO: implement
+    // pub fn load() -> State {}
+
+    // TODO: implement
+    // pub fn save(&self) {}
 
     fn generate_notes(&mut self) {
         let gamut: &Gamut = GAMUTS

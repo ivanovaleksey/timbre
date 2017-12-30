@@ -4,7 +4,7 @@ use std::sync::mpsc;
 
 pub use self::config::Config;
 use self::state::State;
-use self::note::{Note, Octave, Tonality};
+use self::note::{Note, Octave, Pitch, Tonality};
 
 mod config;
 pub mod note;
@@ -103,13 +103,32 @@ impl<'a> Controller<'a> {
         self.state = Some(state);
     }
 
+    // TODO: implement
     fn load_game() {}
 
+    // TODO: implement
     fn save_game() {}
 }
 
 impl<'a> Controller<'a> {
-    fn check_answer() {}
+    fn check_answer(&mut self, answer: Note) -> bool {
+        match self.current_note() {
+            Some(note) => {
+                let right = note == answer;
+                if right {
+                    println!("Right!");
+                    if let Some(ref mut s) = self.state {
+                        s.right_count += 1;
+                    }
+                } else {
+                    println!("Wrong!");
+                }
+
+                right
+            }
+            None => false,
+        }
+    }
 
     fn play_sample(&self, sample: Sample) {
         println!("{}\n", sample);
@@ -129,25 +148,21 @@ impl<'a> Controller<'a> {
         self.play_sample(chord_path);
     }
 
-    pub fn play_next_note(&mut self, note: Option<Note>) {
-        println!("NOTE: {:?}", note);
+    pub fn play_next_note(&mut self) {
+        let note = match self.state {
+            Some(ref mut s) => s.next_note(),
+            None => None,
+        };
 
         match note {
-            Some(n) => self.play_note(n),
-            None => {
-                let note = match self.state {
-                    Some(ref mut s) => s.next_note(),
-                    None => None,
-                };
-
-                match note {
-                    Some(n) => {
-                        println!("NEXT NOTE: {:?}", n);
-                        self.play_note(n);
-                    }
-                    None => println!("Nothing to play\n"),
+            Some(n) => {
+                println!("NEXT NOTE: {:?}", n);
+                self.play_note(n);
+                if let Some(ref mut s) = self.state {
+                    s.total_count += 1;
                 }
             }
+            None => println!("Nothing to play\n"),
         }
     }
 

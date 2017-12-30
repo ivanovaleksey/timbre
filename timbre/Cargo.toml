@@ -7,3 +7,6 @@ authors = ["Aleksey Ivanov <ialexxei@gmail.com>"]
 lazy_static = "1.0.0"
 ears = "0.4.0"
 rand = "0.4.1"
+serde = "1.0.26"
+serde_derive = "1.0.26"
+toml = "0.4.5"

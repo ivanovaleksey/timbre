@@ -19,7 +19,6 @@ pub struct State<'a> {
 }
 
 impl<'a> State<'a> {
-    // TODO: add played note
     // TODO: update counters
     // TODO: load/save on disk
 
@@ -34,8 +33,6 @@ impl<'a> State<'a> {
         };
 
         state.generate_notes();
-        // state.next_note();
-
         state
     }
 
@@ -208,9 +205,9 @@ mod tests {
         let exersice = EXERSICES.iter().nth(0).unwrap();
         let mut state = State::new(tonality, exersice);
 
-        assert!(state.note.is_some());
+        assert!(state.note.is_none());
 
-        let note_1 = state.note.unwrap();
+        let note_1 = state.next_note().unwrap();
         let note_2 = state.next_note().unwrap();
         let note_3 = state.next_note().unwrap();
         let note_4 = state.next_note().unwrap();
@@ -272,9 +269,9 @@ mod tests {
         let exersice = EXERSICES.iter().nth(1).unwrap();
         let mut state = State::new(tonality, exersice);
 
-        assert!(state.note.is_some());
+        assert!(state.note.is_none());
 
-        let note_1 = state.note.unwrap();
+        let note_1 = state.next_note().unwrap();
         let note_2 = state.next_note().unwrap();
         let note_3 = state.next_note().unwrap();
         let note_4 = state.next_note().unwrap();

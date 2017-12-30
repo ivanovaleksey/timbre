@@ -85,15 +85,6 @@ pub struct Note {
     pub pitch: Pitch,
 }
 
-impl Note {
-    // TODO: path to file
-    pub fn sample(&self) -> Sample {
-        let mut path = String::from("/Users/aleksey/Downloads/Timbre/");
-        path.push_str(&format!("{:?}{}.ogg", self.pitch, self.octave as u8));
-        path
-    }
-}
-
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Octave {
     Great = 2,

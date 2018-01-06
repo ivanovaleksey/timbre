@@ -1,47 +1,43 @@
 extern crate gio;
 extern crate gtk;
+extern crate timbre;
 
 use gio::{ApplicationExt, ApplicationExtManual};
-use gtk::*;
+use gtk::prelude::*;
+use timbre::games::octaves;
 
 use content::Content;
-use header::Header;
+
+macro_rules! clone {
+    ($($n:ident),+) => {
+        $( let $n = $n.clone(); )+
+    }
+}
 
 mod content;
-mod header;
-mod menu;
-mod window;
 
 struct App {
     pub window: gtk::ApplicationWindow,
-    pub menu: gio::Menu,
-    pub header: Header,
     pub content: Content,
 }
 
 impl App {
-    fn new(gtk_app: &Application) -> App {
-        let window = window::new(gtk_app);
+    fn new(gtk_app: &gtk::Application) -> App {
+        let config = octaves::Config::load();
+        let controller = octaves::Controller::new_shared(config);
 
-        let menu = menu::new(gtk_app);
+        let window = build_window(gtk_app);
+        window.set_resizable(false);
 
-        let header = Header::new();
-        window.set_titlebar(&header.container);
+        let header = gtk::HeaderBar::new();
+        header.set_title("Timbre");
+        header.set_show_close_button(true);
+        window.set_titlebar(&header);
 
-        let content = Content::new();
+        let content = Content::new(&controller);
         window.add(&content.container);
 
-        {
-            let stack = content.get_stack();
-            header.set_stack(stack);
-        }
-
-        App {
-            window,
-            menu,
-            header,
-            content,
-        }
+        App { window, content }
     }
 
     fn init(gtk_app: &gtk::Application) {
@@ -50,6 +46,24 @@ impl App {
         my_app.window.activate();
         gtk_app.connect_activate(move |_| ());
     }
+}
+
+fn build_window(app: &gtk::Application) -> gtk::ApplicationWindow {
+    let window = gtk::ApplicationWindow::new(app);
+
+    window.set_title("Timbre");
+    window.set_wmclass("app-name", "Timbre");
+    window.set_border_width(10);
+    window.set_position(gtk::WindowPosition::Center);
+    window.set_default_size(800, 500);
+
+    let window_1 = window.clone();
+    window.connect_delete_event(move |_, _| {
+        window_1.destroy();
+        Inhibit(false)
+    });
+
+    window
 }
 
 fn main() {

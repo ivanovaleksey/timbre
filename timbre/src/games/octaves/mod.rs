@@ -1,6 +1,8 @@
 use ears::{AudioController, Sound};
 use std::thread;
 use std::sync::mpsc;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub use self::config::Config;
 use self::state::State;
@@ -75,6 +77,8 @@ pub struct Controller {
     tonality: Option<Tonality>,
 }
 
+pub type SharedController = Rc<RefCell<Controller>>;
+
 impl Controller {
     pub fn new(config: Config) -> Controller {
         let (tx, rx) = mpsc::channel::<Sample>();
@@ -95,6 +99,11 @@ impl Controller {
             // TODO: is it required?
             tonality: None,
         }
+    }
+
+    pub fn new_shared(config: Config) -> SharedController {
+        let ctrl = Controller::new(config);
+        Rc::new(RefCell::new(ctrl))
     }
 
     pub fn new_game(&mut self, tonality: Tonality) {

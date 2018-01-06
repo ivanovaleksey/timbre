@@ -59,7 +59,7 @@ lazy_static! {
     };
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Exercise {
     num: u8,
     octaves: Vec<Octave>,
@@ -68,15 +68,15 @@ pub struct Exercise {
 type Sample = String;
 
 #[derive(Debug)]
-pub struct Controller<'a> {
+pub struct Controller {
     config: Config,
     gramophone: mpsc::Sender<Sample>,
-    state: Option<State<'a>>,
+    state: Option<State>,
     tonality: Option<Tonality>,
 }
 
-impl<'a> Controller<'a> {
-    pub fn new(config: Config) -> Controller<'a> {
+impl Controller {
+    pub fn new(config: Config) -> Controller {
         let (tx, rx) = mpsc::channel::<Sample>();
 
         thread::spawn(move || {
@@ -98,7 +98,7 @@ impl<'a> Controller<'a> {
     }
 
     pub fn new_game(&mut self, tonality: Tonality) {
-        let exersice = EXERSICES.first().unwrap();
+        let exersice = EXERSICES.first().cloned().unwrap();
         let state = State::new(tonality, exersice);
         self.state = Some(state);
     }
@@ -110,7 +110,7 @@ impl<'a> Controller<'a> {
     fn save_game() {}
 }
 
-impl<'a> Controller<'a> {
+impl Controller {
     fn check_answer(&mut self, answer: Note) -> bool {
         match self.current_note() {
             Some(note) => {

@@ -3,11 +3,11 @@ use super::Exercise;
 use super::note::{Gamut, Note, Tonality, GAMUTS};
 
 #[derive(Debug)]
-pub struct State<'a> {
+pub struct State {
     // Chosen tonality
     tonality: Tonality,
     // Current exersice
-    exersice: &'a Exercise,
+    exersice: Exercise,
     // Current note
     pub note: Option<Note>,
     // Notes to play
@@ -18,8 +18,8 @@ pub struct State<'a> {
     pub total_count: u8,
 }
 
-impl<'a> State<'a> {
-    pub fn new(tonality: Tonality, exersice: &Exercise) -> State {
+impl State {
+    pub fn new(tonality: Tonality, exersice: Exercise) -> State {
         let mut state = State {
             tonality,
             exersice,

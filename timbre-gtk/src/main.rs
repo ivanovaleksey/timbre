@@ -60,7 +60,6 @@ fn build_window(app: &gtk::Application) -> gtk::ApplicationWindow {
 
     window.set_title("Timbre");
     window.set_wmclass("app-name", "Timbre");
-    window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(800, 500);
 

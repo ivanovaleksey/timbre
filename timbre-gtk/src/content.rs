@@ -19,11 +19,7 @@ struct Statistics {
 
 impl Content {
     pub fn new(controller: &octaves::SharedController) -> Content {
-        let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
-
-        let menu_bar = gtk::MenuBar::new();
-
-        let h_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        let container = gtk::Box::new(gtk::Orientation::Horizontal, 0);
 
         let ton_combo = gtk::ComboBoxText::new();
         for tonality in octaves::note::TONALITIES.iter() {
@@ -53,13 +49,10 @@ impl Content {
         left_box.pack_start(&revealer, true, true, 0);
         right_box.pack_start(&stats.container, true, true, 10);
 
-        h_box.pack_start(&left_box, true, true, 0);
+        container.pack_start(&left_box, true, true, 10);
         let sep = gtk::Separator::new(gtk::Orientation::Vertical);
-        h_box.pack_start(&sep, false, false, 0);
-        h_box.pack_start(&right_box, false, false, 100);
-
-        container.pack_start(&menu_bar, false, false, 0);
-        container.pack_start(&h_box, true, true, 0);
+        container.pack_start(&sep, false, false, 0);
+        container.pack_start(&right_box, false, false, 100);
 
         start_btn.connect_clicked({
             clone!(controller, revealer, ton_combo);

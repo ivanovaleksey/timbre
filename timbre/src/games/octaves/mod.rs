@@ -195,4 +195,18 @@ impl Controller {
             None => None,
         }
     }
+
+    pub fn right_count(&self) -> u8 {
+        match self.state {
+            Some(ref state) => state.right_count,
+            None => 0,
+        }
+    }
+
+    pub fn total_count(&self) -> u8 {
+        match self.state {
+            Some(ref state) => state.total_count,
+            None => 0,
+        }
+    }
 }

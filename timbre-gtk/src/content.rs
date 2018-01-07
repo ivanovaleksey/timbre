@@ -8,6 +8,12 @@ pub struct Content {
     pub container: gtk::Box,
 }
 
+struct Statistics {
+    container: gtk::Box,
+    right_label: gtk::Label,
+    total_label: gtk::Label,
+}
+
 impl Content {
     pub fn new(controller: &octaves::SharedController) -> Content {
         let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -24,9 +30,9 @@ impl Content {
 
         let start_btn = gtk::Button::new_with_label("Start");
 
-        let statictics = Content::build_statistics_panel();
+        let stats = Content::build_statistics_panel();
 
-        let game_area = Content::build_game_area(controller);
+        let game_area = Content::build_game_area(controller, &stats);
         let revealer = gtk::Revealer::new();
         revealer.set_transition_type(gtk::RevealerTransitionType::Crossfade);
         revealer.set_transition_duration(2000);
@@ -42,7 +48,7 @@ impl Content {
 
         left_box.pack_start(&ton_box, false, false, 10);
         left_box.pack_start(&revealer, true, true, 0);
-        right_box.pack_start(&statictics, true, true, 10);
+        right_box.pack_start(&stats.container, true, true, 10);
 
         h_box.pack_start(&left_box, true, true, 0);
         let sep = gtk::Separator::new(gtk::Orientation::Vertical);
@@ -69,18 +75,18 @@ impl Content {
         Content { container }
     }
 
-    fn build_statistics_panel() -> gtk::Box {
+    fn build_statistics_panel() -> Statistics {
         let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
         let box_1 = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         let box_2 = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         let box_3 = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
-        let label_1 = gtk::Label::new("Right:");
-        let label_2 = gtk::Label::new("X");
+        let label_1 = gtk::Label::new("Right: ");
+        let label_2 = gtk::Label::new("-");
 
-        let label_3 = gtk::Label::new("Total:");
-        let label_4 = gtk::Label::new("Y");
+        let label_3 = gtk::Label::new("Total: ");
+        let label_4 = gtk::Label::new("-");
 
         box_1.pack_start(&label_1, false, false, 0);
         box_1.pack_end(&label_2, false, false, 0);
@@ -98,10 +104,14 @@ impl Content {
         container.pack_start(&box_2, false, false, 0);
         container.pack_end(&box_3, false, false, 0);
 
-        container
+        Statistics {
+            container,
+            right_label: label_2,
+            total_label: label_4,
+        }
     }
 
-    fn build_game_area(controller: &octaves::SharedController) -> gtk::Box {
+    fn build_game_area(controller: &octaves::SharedController, stats: &Statistics) -> gtk::Box {
         let v_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
         v_box.set_halign(gtk::Align::Center);
         v_box.set_valign(gtk::Align::Center);
@@ -144,8 +154,11 @@ impl Content {
             .map(|x| x.add_class("suggested-action"));
         next_btn.connect_clicked({
             clone!(controller);
+            let total_label = stats.total_label.clone();
             move |_| {
                 controller.borrow_mut().play_next_note();
+                let total_count = controller.borrow().total_count();
+                total_label.set_text(&total_count.to_string());
             }
         });
 
@@ -161,9 +174,13 @@ impl Content {
         for btn in note_btns.iter() {
             btn.connect_clicked({
                 clone!(controller);
+                let right_label = stats.right_label.clone();
                 move |b| {
                     let label = b.get_label().unwrap();
-                    controller.borrow_mut().check_answer(&label);
+                    if controller.borrow_mut().check_answer(&label) {
+                        let right_count = controller.borrow().right_count();
+                        right_label.set_text(&right_count.to_string());
+                    }
                 }
             });
         }

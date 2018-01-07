@@ -1,3 +1,4 @@
+use std::fmt;
 use super::Sample;
 
 lazy_static! {
@@ -142,4 +143,36 @@ pub enum Pitch {
     Bflat,
     B,
     Bsharp,
+}
+
+impl fmt::Display for Pitch {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = format!("{:?}", self);
+        let pitch = s.chars().nth(0).unwrap();
+        let sign: &str = if s.ends_with("flat") {
+            "b"
+        } else if s.ends_with("sharp") {
+            "#"
+        } else {
+            ""
+        };
+
+        write!(f, "{}{}", pitch, sign)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pitch_display() {
+        assert_eq!(Pitch::C.to_string(), "C");
+        assert_eq!(Pitch::Cflat.to_string(), "Cb");
+        assert_eq!(Pitch::Csharp.to_string(), "C#");
+
+        assert_eq!(Pitch::D.to_string(), "D");
+        assert_eq!(Pitch::Dflat.to_string(), "Db");
+        assert_eq!(Pitch::Dsharp.to_string(), "D#");
+    }
 }

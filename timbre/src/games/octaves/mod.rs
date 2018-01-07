@@ -69,12 +69,12 @@ pub struct Exercise {
 
 type Sample = String;
 
-#[derive(Debug)]
 pub struct Controller {
     config: Config,
     gramophone: mpsc::Sender<Sample>,
     state: Option<State>,
     tonality: Option<Tonality>,
+    count_observers: Vec<Box<Fn(&Controller) -> ()>>,
 }
 
 pub type SharedController = Rc<RefCell<Controller>>;
@@ -98,6 +98,7 @@ impl Controller {
             state: None,
             // TODO: is it required?
             tonality: None,
+            count_observers: Vec::new(),
         }
     }
 
@@ -111,6 +112,7 @@ impl Controller {
         let state = State::new(tonality, exersice);
         self.state = Some(state);
         self.tonality = Some(tonality);
+        self.count_changed();
     }
 
     // TODO: implement
@@ -129,9 +131,7 @@ impl Controller {
                 let right = note.pitch == answer;
                 if right {
                     println!("Right!");
-                    if let Some(ref mut s) = self.state {
-                        s.right_count += 1;
-                    }
+                    self.inc_right_count();
                 } else {
                     println!("Wrong!");
                 }
@@ -174,9 +174,7 @@ impl Controller {
             Some(n) => {
                 println!("NEXT NOTE: {:?}", n);
                 self.play_note(n);
-                if let Some(ref mut s) = self.state {
-                    s.total_count += 1;
-                }
+                self.inc_total_count();
             }
             None => println!("Nothing to play\n"),
         }
@@ -195,6 +193,21 @@ impl Controller {
             None => None,
         }
     }
+}
+
+impl Controller {
+    pub fn add_count_observer<F>(&mut self, f: F)
+    where
+        F: Fn(&Controller) -> () + 'static,
+    {
+        self.count_observers.push(Box::new(f));
+    }
+
+    fn count_changed(&self) {
+        for f in &self.count_observers {
+            f(self)
+        }
+    }
 
     pub fn right_count(&self) -> u8 {
         match self.state {
@@ -203,10 +216,24 @@ impl Controller {
         }
     }
 
+    fn inc_right_count(&mut self) {
+        if let Some(ref mut s) = self.state {
+            s.right_count += 1;
+        }
+        self.count_changed();
+    }
+
     pub fn total_count(&self) -> u8 {
         match self.state {
             Some(ref state) => state.total_count,
             None => 0,
         }
+    }
+
+    fn inc_total_count(&mut self) {
+        if let Some(ref mut s) = self.state {
+            s.total_count += 1;
+        }
+        self.count_changed();
     }
 }

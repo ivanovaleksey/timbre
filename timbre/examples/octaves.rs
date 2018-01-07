@@ -10,8 +10,6 @@ fn main() {
     let tonality = octaves::note::TONALITIES.first().unwrap();
     controller.new_game(*tonality);
 
-    println!("{:?}", controller);
-
     controller.play_tonal_center();
 
     controller.play_next_note();

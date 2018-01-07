@@ -84,10 +84,10 @@ impl Content {
         let box_3 = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
         let label_1 = gtk::Label::new("Right: ");
-        let label_2 = gtk::Label::new("-");
+        let label_2 = gtk::Label::new("0");
 
         let label_3 = gtk::Label::new("Total: ");
-        let label_4 = gtk::Label::new("-");
+        let label_4 = gtk::Label::new("0");
 
         box_1.pack_start(&label_1, false, false, 0);
         box_1.pack_end(&label_2, false, false, 0);
@@ -147,19 +147,18 @@ impl Content {
             }
         });
 
-        let next_btn =
-            gtk::Button::new_from_icon_name("media-playback-start-symbolic", gtk::IconSize::Button.into());
+        let next_btn = gtk::Button::new_from_icon_name(
+            "media-playback-start-symbolic",
+            gtk::IconSize::Button.into(),
+        );
         next_btn.set_tooltip_text("Play next note");
         next_btn
             .get_style_context()
             .map(|x| x.add_class("suggested-action"));
         next_btn.connect_clicked({
             clone!(controller);
-            let total_label = stats.total_label.clone();
             move |_| {
                 controller.borrow_mut().play_next_note();
-                let total_count = controller.borrow().total_count();
-                total_label.set_text(&total_count.to_string());
             }
         });
 
@@ -176,12 +175,8 @@ impl Content {
                 let label = $btn.get_label().unwrap();
                 $btn.connect_clicked({
                     clone!(controller);
-                    let right_label = stats.right_label.clone();
                     move |_| {
-                        if controller.borrow_mut().check_answer(&label) {
-                            let right_count = controller.borrow().right_count();
-                            right_label.set_text(&right_count.to_string());
-                        }
+                        controller.borrow_mut().check_answer(&label);
                     }
                 });
             }}
@@ -205,14 +200,9 @@ impl Content {
             ($btn:ident, $sharp:expr, $flat:expr) => {{
                 $btn.connect_clicked({
                     clone!(controller);
-                    let right_label = stats.right_label.clone();
                     move |_| {
-                        let correct_1 = controller.borrow_mut().check_answer(&$sharp);
-                        let correct_2 = controller.borrow_mut().check_answer(&$flat);
-                        if correct_1 || correct_2 {
-                            let right_count = controller.borrow().right_count();
-                            right_label.set_text(&right_count.to_string());
-                        }
+                        controller.borrow_mut().check_answer(&$sharp);
+                        controller.borrow_mut().check_answer(&$flat);
                     }
                 });
             }}
@@ -223,6 +213,21 @@ impl Content {
         alt_answer!(fsharp_btn, "Fsharp", "Gflat");
         alt_answer!(gsharp_btn, "Gsharp", "Aflat");
         alt_answer!(asharp_btn, "Asharp", "Bflat");
+
+        controller.borrow_mut().add_count_observer({
+            let label = stats.total_label.clone();
+            move |ctrl| {
+                let count = ctrl.total_count();
+                label.set_text(&count.to_string());
+            }
+        });
+        controller.borrow_mut().add_count_observer({
+            let label = stats.right_label.clone();
+            move |ctrl| {
+                let count = ctrl.right_count();
+                label.set_text(&count.to_string());
+            }
+        });
 
         let row_1 = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         let row_2 = gtk::Box::new(gtk::Orientation::Horizontal, 0);

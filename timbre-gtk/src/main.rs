@@ -63,10 +63,12 @@ fn build_window(app: &gtk::Application) -> gtk::ApplicationWindow {
     window.set_position(gtk::WindowPosition::Center);
     window.set_default_size(800, 500);
 
-    let window_1 = window.clone();
-    window.connect_delete_event(move |_, _| {
-        window_1.destroy();
-        Inhibit(false)
+    window.connect_delete_event({
+        clone!(window);
+        move |_, _| {
+            window.destroy();
+            Inhibit(false)
+        }
     });
 
     window

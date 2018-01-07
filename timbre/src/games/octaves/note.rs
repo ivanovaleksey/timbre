@@ -86,6 +86,12 @@ pub struct Note {
     pub pitch: Pitch,
 }
 
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}{}", self.pitch, self.octave as u8)
+    }
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Octave {
     Great = 2,
@@ -170,6 +176,21 @@ impl fmt::Display for Pitch {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn note_display() {
+        let c_4 = Note {
+            octave: Octave::First,
+            pitch: Pitch::C,
+        };
+        let csharp_4 = Note {
+            octave: Octave::First,
+            pitch: Pitch::Csharp,
+        };
+
+        assert_eq!(c_4.to_string(), "C4");
+        assert_eq!(csharp_4.to_string(), "C#4");
+    }
 
     #[test]
     fn pitch_display() {

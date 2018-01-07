@@ -137,10 +137,7 @@ impl Controller {
     }
 
     fn play_note(&self, note: Note) {
-        let sample_path = format!(
-            "{}/{:?}{}.ogg",
-            self.config.notes_path, note.pitch, note.octave as u8
-        );
+        let sample_path = format!("{}/{}.ogg", self.config.notes_path, note);
         self.play_sample(sample_path);
     }
 

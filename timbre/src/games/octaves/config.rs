@@ -6,7 +6,8 @@ use toml;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Config {
-    pub samples_path: String,
+    pub notes_path: String,
+    pub tonal_centers_path: String,
 }
 
 #[derive(Debug)]
@@ -18,9 +19,12 @@ enum Error {
 impl Config {
     fn new() -> Config {
         let samples_path = Config::app_data_path().join("samples");
+        let notes_path = samples_path.join("notes");
+        let tonal_centers_path = samples_path.join("tonal-centers");
 
         Config {
-            samples_path: samples_path.to_str().unwrap().to_string(),
+            notes_path: notes_path.to_str().unwrap().to_string(),
+            tonal_centers_path: tonal_centers_path.to_str().unwrap().to_string(),
         }
     }
 

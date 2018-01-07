@@ -1,3 +1,4 @@
+use std::fmt;
 use super::Sample;
 
 lazy_static! {
@@ -85,6 +86,12 @@ pub struct Note {
     pub pitch: Pitch,
 }
 
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}{}", self.pitch, self.octave as u8)
+    }
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Octave {
     Great = 2,
@@ -112,6 +119,12 @@ type Scale = [Pitch; 7];
 
 #[derive(Copy, Clone, Debug)]
 pub struct Tonality(pub Pitch);
+
+impl fmt::Display for Tonality {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}maj", self.0)
+    }
+}
 
 #[derive(Debug)]
 pub struct Gamut {
@@ -142,4 +155,60 @@ pub enum Pitch {
     Bflat,
     B,
     Bsharp,
+}
+
+impl fmt::Display for Pitch {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = format!("{:?}", self);
+        let pitch = s.chars().nth(0).unwrap();
+        let sign: &str = if s.ends_with("flat") {
+            "b"
+        } else if s.ends_with("sharp") {
+            "#"
+        } else {
+            ""
+        };
+
+        write!(f, "{}{}", pitch, sign)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn note_display() {
+        let c_4 = Note {
+            octave: Octave::First,
+            pitch: Pitch::C,
+        };
+        let csharp_4 = Note {
+            octave: Octave::First,
+            pitch: Pitch::Csharp,
+        };
+
+        assert_eq!(c_4.to_string(), "C4");
+        assert_eq!(csharp_4.to_string(), "C#4");
+    }
+
+    #[test]
+    fn pitch_display() {
+        assert_eq!(Pitch::C.to_string(), "C");
+        assert_eq!(Pitch::Cflat.to_string(), "Cb");
+        assert_eq!(Pitch::Csharp.to_string(), "C#");
+
+        assert_eq!(Pitch::D.to_string(), "D");
+        assert_eq!(Pitch::Dflat.to_string(), "Db");
+        assert_eq!(Pitch::Dsharp.to_string(), "D#");
+    }
+
+    #[test]
+    fn tonality_display() {
+        let c_ton = TONALITIES.first().unwrap();
+        assert_eq!(c_ton.to_string(), "Cmaj");
+
+        let fsharp_ton = TONALITIES.last().unwrap();
+        assert_eq!(fsharp_ton.to_string(), "F#maj");
+    }
 }

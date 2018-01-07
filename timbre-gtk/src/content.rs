@@ -122,11 +122,11 @@ impl Content {
         let btns = gtk::Box::new(gtk::Orientation::Horizontal, 5);
         btns.set_halign(gtk::Align::Center);
 
-        let keys = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        let keys = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
         let play_chord_btn =
             gtk::Button::new_from_icon_name("emblem-music-symbolic", gtk::IconSize::Button.into());
-        play_chord_btn.set_tooltip_text("Play chord");
+        play_chord_btn.set_tooltip_text("Play tonal center");
         play_chord_btn.connect_clicked({
             clone!(controller);
             move |_| {
@@ -170,33 +170,90 @@ impl Content {
         let a_btn = gtk::Button::new_with_label("A");
         let b_btn = gtk::Button::new_with_label("B");
 
-        let note_btns = [&c_btn, &d_btn, &e_btn, &f_btn, &g_btn, &a_btn, &b_btn];
-        for btn in note_btns.iter() {
-            btn.connect_clicked({
-                clone!(controller);
-                let right_label = stats.right_label.clone();
-                move |b| {
-                    let label = b.get_label().unwrap();
-                    if controller.borrow_mut().check_answer(&label) {
-                        let right_count = controller.borrow().right_count();
-                        right_label.set_text(&right_count.to_string());
+        macro_rules! answer {
+            ($btn:ident) => {{
+                let label = $btn.get_label().unwrap();
+                $btn.connect_clicked({
+                    clone!(controller);
+                    let right_label = stats.right_label.clone();
+                    move |_| {
+                        if controller.borrow_mut().check_answer(&label) {
+                            let right_count = controller.borrow().right_count();
+                            right_label.set_text(&right_count.to_string());
+                        }
                     }
-                }
-            });
+                });
+            }}
         }
+
+        answer!(c_btn);
+        answer!(d_btn);
+        answer!(e_btn);
+        answer!(f_btn);
+        answer!(g_btn);
+        answer!(a_btn);
+        answer!(b_btn);
+
+        let csharp_btn = gtk::Button::new_with_label("# / b");
+        let dsharp_btn = gtk::Button::new_with_label("# / b");
+        let fsharp_btn = gtk::Button::new_with_label("# / b");
+        let gsharp_btn = gtk::Button::new_with_label("# / b");
+        let asharp_btn = gtk::Button::new_with_label("# / b");
+
+        macro_rules! alt_answer {
+            ($btn:ident, $sharp:expr, $flat:expr) => {{
+                $btn.connect_clicked({
+                    clone!(controller);
+                    let right_label = stats.right_label.clone();
+                    move |_| {
+                        let correct_1 = controller.borrow_mut().check_answer(&$sharp);
+                        let correct_2 = controller.borrow_mut().check_answer(&$flat);
+                        if correct_1 || correct_2 {
+                            let right_count = controller.borrow().right_count();
+                            right_label.set_text(&right_count.to_string());
+                        }
+                    }
+                });
+            }}
+        }
+
+        alt_answer!(csharp_btn, "Csharp", "Dflat");
+        alt_answer!(dsharp_btn, "Dsharp", "Eflat");
+        alt_answer!(fsharp_btn, "Fsharp", "Gflat");
+        alt_answer!(gsharp_btn, "Gsharp", "Aflat");
+        alt_answer!(asharp_btn, "Asharp", "Bflat");
+
+        let row_1 = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        let row_2 = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+
+        let left_part = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        let right_part = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+
+        row_1.pack_start(&left_part, false, false, 20);
+        row_1.pack_start(&right_part, false, false, 5);
+
+        left_part.pack_start(&csharp_btn, false, false, 0);
+        left_part.pack_start(&dsharp_btn, false, false, 0);
+
+        right_part.pack_start(&fsharp_btn, false, false, 0);
+        right_part.pack_start(&gsharp_btn, false, false, 0);
+        right_part.pack_start(&asharp_btn, false, false, 0);
+
+        row_2.pack_start(&c_btn, false, false, 0);
+        row_2.pack_start(&d_btn, false, false, 0);
+        row_2.pack_start(&e_btn, false, false, 0);
+        row_2.pack_start(&f_btn, false, false, 0);
+        row_2.pack_start(&g_btn, false, false, 0);
+        row_2.pack_start(&a_btn, false, false, 0);
+        row_2.pack_start(&b_btn, false, false, 0);
 
         box_1.pack_start(&play_chord_btn, false, false, 0);
 
         btns.pack_start(&play_btn, false, false, 0);
         btns.pack_start(&next_btn, false, false, 0);
 
-        keys.pack_start(&c_btn, false, false, 0);
-        keys.pack_start(&d_btn, false, false, 0);
-        keys.pack_start(&e_btn, false, false, 0);
-        keys.pack_start(&f_btn, false, false, 0);
-        keys.pack_start(&g_btn, false, false, 0);
-        keys.pack_start(&a_btn, false, false, 0);
-        keys.pack_start(&b_btn, false, false, 0);
+        keys.pack_start(&row_1, false, false, 0);
+        keys.pack_start(&row_2, false, false, 0);
 
         v_box.pack_start(&box_1, false, false, 0);
         v_box.pack_start(&btns, false, false, 20);

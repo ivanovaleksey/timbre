@@ -136,7 +136,7 @@ impl Content {
         });
 
         let play_btn = gtk::Button::new_from_icon_name(
-            "media-playback-start-symbolic",
+            "media-playlist-repeat-symbolic",
             gtk::IconSize::Button.into(),
         );
         play_btn.set_tooltip_text("Repeat note");
@@ -148,7 +148,7 @@ impl Content {
         });
 
         let next_btn =
-            gtk::Button::new_from_icon_name("go-next-symbolic", gtk::IconSize::Button.into());
+            gtk::Button::new_from_icon_name("media-playback-start-symbolic", gtk::IconSize::Button.into());
         next_btn.set_tooltip_text("Play next note");
         next_btn
             .get_style_context()

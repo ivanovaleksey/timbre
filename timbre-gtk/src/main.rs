@@ -35,7 +35,14 @@ impl App {
         window.set_titlebar(&header);
 
         let content = Content::new(&controller);
-        window.add(&content.container);
+        let menu_bar = gtk::MenuBar::new();
+        menu_bar.append(&build_game_menu(&window, &content));
+
+        let v_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        v_box.pack_start(&menu_bar, false, false, 0);
+        v_box.pack_start(&content.container, true, true, 0);
+
+        window.add(&v_box);
 
         App { window, content }
     }
@@ -64,6 +71,46 @@ fn build_window(app: &gtk::Application) -> gtk::ApplicationWindow {
     });
 
     window
+}
+
+macro_rules! build_menu {
+    ($menu:expr, [$( $item:expr ),*]) => {{
+        let menu = gtk::MenuItem::new_with_mnemonic($menu);
+        let submenu = gtk::Menu::new();
+        $( submenu.append(&$item); )*
+        menu.set_submenu(&submenu);
+        menu
+    }}
+}
+
+fn build_game_menu(window: &gtk::ApplicationWindow, content: &Content) -> gtk::MenuItem {
+    let new = gtk::MenuItem::new_with_mnemonic("_New");
+    let load = gtk::MenuItem::new_with_mnemonic("_Load");
+    let save = gtk::MenuItem::new_with_mnemonic("_Save");
+    let quit = gtk::MenuItem::new_with_mnemonic("_Quit");
+
+    // TODO: prompt to save the game
+    new.connect_activate({
+        let revealer = content.revealer.clone();
+        let start_btn = content.start_btn.clone();
+        let ton_combo = content.tonality_combo.clone();
+        move |_| {
+            revealer.set_reveal_child(false);
+            start_btn.set_sensitive(true);
+            ton_combo.set_sensitive(true);
+        }
+    });
+
+    // TODO: prompt to save the game
+    quit.connect_activate({
+        clone!(window);
+        move |_| window.close()
+    });
+
+    build_menu!(
+        "_Game",
+        [new, load, save, gtk::SeparatorMenuItem::new(), quit]
+    )
 }
 
 fn main() {

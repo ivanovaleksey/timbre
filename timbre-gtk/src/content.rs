@@ -6,6 +6,9 @@ use timbre::games::octaves;
 #[derive(Clone)]
 pub struct Content {
     pub container: gtk::Box,
+    pub revealer: gtk::Revealer,
+    pub start_btn: gtk::Button,
+    pub tonality_combo: gtk::ComboBoxText,
 }
 
 struct Statistics {
@@ -59,7 +62,7 @@ impl Content {
         container.pack_start(&h_box, true, true, 0);
 
         start_btn.connect_clicked({
-            clone!(controller);
+            clone!(controller, revealer, ton_combo);
             move |btn| {
                 btn.set_sensitive(false);
                 ton_combo.set_sensitive(false);
@@ -72,7 +75,12 @@ impl Content {
             }
         });
 
-        Content { container }
+        Content {
+            container,
+            start_btn,
+            revealer,
+            tonality_combo: ton_combo,
+        }
     }
 
     fn build_statistics_panel() -> Statistics {

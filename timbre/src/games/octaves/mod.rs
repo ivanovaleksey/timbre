@@ -121,10 +121,12 @@ impl Controller {
 }
 
 impl Controller {
-    fn check_answer(&mut self, answer: Note) -> bool {
+    pub fn check_answer(&mut self, answer: &str) -> bool {
+        let answer: Pitch = Pitch::from_string(&answer);
+
         match self.current_note() {
             Some(note) => {
-                let right = note == answer;
+                let right = note.pitch == answer;
                 if right {
                     println!("Right!");
                     if let Some(ref mut s) = self.state {
@@ -136,7 +138,10 @@ impl Controller {
 
                 right
             }
-            None => false,
+            None => {
+                println!("There is no current note to compare with");
+                false
+            }
         }
     }
 

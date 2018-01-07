@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, str};
 use super::Sample;
 
 lazy_static! {
@@ -155,6 +155,43 @@ pub enum Pitch {
     Bflat,
     B,
     Bsharp,
+}
+
+impl Pitch {
+    pub fn from_string(value: &str) -> Pitch {
+        value.parse::<Pitch>().unwrap()
+    }
+}
+
+impl str::FromStr for Pitch {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Pitch, ()> {
+        match s {
+            "Cflat" => Ok(Pitch::Cflat),
+            "C" => Ok(Pitch::C),
+            "Csharp" => Ok(Pitch::Csharp),
+            "Dflat" => Ok(Pitch::Dflat),
+            "D" => Ok(Pitch::D),
+            "Dsharp" => Ok(Pitch::Dsharp),
+            "Eflat" => Ok(Pitch::Eflat),
+            "E" => Ok(Pitch::E),
+            "Esharp" => Ok(Pitch::Esharp),
+            "Fflat" => Ok(Pitch::Fflat),
+            "F" => Ok(Pitch::F),
+            "Fsharp" => Ok(Pitch::Fsharp),
+            "Gflat" => Ok(Pitch::Gflat),
+            "G" => Ok(Pitch::G),
+            "Gsharp" => Ok(Pitch::Gsharp),
+            "Aflat" => Ok(Pitch::Aflat),
+            "A" => Ok(Pitch::A),
+            "Asharp" => Ok(Pitch::Asharp),
+            "Bflat" => Ok(Pitch::Bflat),
+            "B" => Ok(Pitch::B),
+            "Bsharp" => Ok(Pitch::Bsharp),
+            _ => Err(()),
+        }
+    }
 }
 
 impl fmt::Display for Pitch {

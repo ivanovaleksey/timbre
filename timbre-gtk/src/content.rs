@@ -149,7 +149,6 @@ impl Content {
             }
         });
 
-        // TODO: handle click
         let c_btn = gtk::Button::new_with_label("C");
         let d_btn = gtk::Button::new_with_label("D");
         let e_btn = gtk::Button::new_with_label("E");
@@ -157,6 +156,17 @@ impl Content {
         let g_btn = gtk::Button::new_with_label("G");
         let a_btn = gtk::Button::new_with_label("A");
         let b_btn = gtk::Button::new_with_label("B");
+
+        let note_btns = [&c_btn, &d_btn, &e_btn, &f_btn, &g_btn, &a_btn, &b_btn];
+        for btn in note_btns.iter() {
+            btn.connect_clicked({
+                clone!(controller);
+                move |b| {
+                    let label = b.get_label().unwrap();
+                    controller.borrow_mut().check_answer(&label);
+                }
+            });
+        }
 
         box_1.pack_start(&play_chord_btn, false, false, 0);
 

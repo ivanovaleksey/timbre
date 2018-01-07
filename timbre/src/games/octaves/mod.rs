@@ -101,6 +101,7 @@ impl Controller {
         let exersice = EXERSICES.first().cloned().unwrap();
         let state = State::new(tonality, exersice);
         self.state = Some(state);
+        self.tonality = Some(tonality);
     }
 
     // TODO: implement
@@ -136,16 +137,20 @@ impl Controller {
     }
 
     fn play_note(&self, note: Note) {
-        let note_path = format!(
+        let sample_path = format!(
             "{}/{:?}{}.ogg",
-            self.config.samples_path, note.pitch, note.octave as u8
+            self.config.notes_path, note.pitch, note.octave as u8
         );
-        self.play_sample(note_path);
+        self.play_sample(sample_path);
     }
 
-    pub fn play_sequence(&self) {
-        let chord_path = format!("{}/Cmaj.ogg", self.config.samples_path);
-        self.play_sample(chord_path);
+    pub fn play_tonal_center(&self) {
+        let sample_path = format!(
+            "{}/IIVVIPAC - {}.ogg",
+            self.config.tonal_centers_path,
+            self.tonality.unwrap()
+        );
+        self.play_sample(sample_path);
     }
 
     pub fn play_next_note(&mut self) {

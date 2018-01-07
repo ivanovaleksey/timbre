@@ -12,7 +12,7 @@ fn main() {
 
     println!("{:?}", controller);
 
-    controller.play_sequence();
+    controller.play_tonal_center();
 
     controller.play_next_note();
     controller.repeat_note();

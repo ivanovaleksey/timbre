@@ -89,7 +89,7 @@ mod tests {
     #[test]
     fn generate_notes_first_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(0).unwrap();
+        let exersice = EXERSICES.iter().nth(0).cloned().unwrap();
         let state = State::new(tonality, exersice);
 
         let notes = [
@@ -133,7 +133,7 @@ mod tests {
     #[test]
     fn generate_notes_second_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(1).unwrap();
+        let exersice = EXERSICES.iter().nth(1).cloned().unwrap();
         let state = State::new(tonality, exersice);
 
         let notes = [
@@ -205,7 +205,7 @@ mod tests {
     #[test]
     fn next_note_first_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(0).unwrap();
+        let exersice = EXERSICES.iter().nth(0).cloned().unwrap();
         let mut state = State::new(tonality, exersice);
 
         assert!(state.note.is_none());
@@ -269,7 +269,7 @@ mod tests {
     #[test]
     fn next_note_second_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(1).unwrap();
+        let exersice = EXERSICES.iter().nth(1).cloned().unwrap();
         let mut state = State::new(tonality, exersice);
 
         assert!(state.note.is_none());

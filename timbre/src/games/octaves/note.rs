@@ -114,6 +114,12 @@ type Scale = [Pitch; 7];
 #[derive(Copy, Clone, Debug)]
 pub struct Tonality(pub Pitch);
 
+impl fmt::Display for Tonality {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}maj", self.0)
+    }
+}
+
 #[derive(Debug)]
 pub struct Gamut {
     pub key: Pitch,
@@ -174,5 +180,14 @@ mod tests {
         assert_eq!(Pitch::D.to_string(), "D");
         assert_eq!(Pitch::Dflat.to_string(), "Db");
         assert_eq!(Pitch::Dsharp.to_string(), "D#");
+    }
+
+    #[test]
+    fn tonality_display() {
+        let c_ton = TONALITIES.first().unwrap();
+        assert_eq!(c_ton.to_string(), "Cmaj");
+
+        let fsharp_ton = TONALITIES.last().unwrap();
+        assert_eq!(fsharp_ton.to_string(), "F#maj");
     }
 }

@@ -19,15 +19,18 @@ lazy_static! {
         });
         v.push(Gamut {
             key: Pitch::A,
-            scale: [Pitch::A, Pitch::B, Pitch::Csharp, Pitch::D, Pitch::E, Pitch::Fsharp, Pitch::Gsharp],
+            scale: [Pitch::A, Pitch::B, Pitch::Csharp, Pitch::D, Pitch::E, Pitch::Fsharp,
+                    Pitch::Gsharp],
         });
         v.push(Gamut {
             key: Pitch::E,
-            scale: [Pitch::E, Pitch::Fsharp, Pitch::Gsharp, Pitch::A, Pitch::B, Pitch::Csharp, Pitch::Dsharp],
+            scale: [Pitch::E, Pitch::Fsharp, Pitch::Gsharp, Pitch::A, Pitch::B, Pitch::Csharp,
+                    Pitch::Dsharp],
         });
         v.push(Gamut {
             key: Pitch::B,
-            scale: [Pitch::B, Pitch::Csharp, Pitch::Dsharp, Pitch::E, Pitch::Fsharp, Pitch::Gsharp, Pitch::Asharp],
+            scale: [Pitch::B, Pitch::Csharp, Pitch::Dsharp, Pitch::E, Pitch::Fsharp, Pitch::Gsharp,
+                    Pitch::Asharp],
         });
 
         v.push(Gamut {
@@ -40,19 +43,23 @@ lazy_static! {
         });
         v.push(Gamut {
             key: Pitch::Eflat,
-            scale: [Pitch::Eflat, Pitch::F, Pitch::G, Pitch::Aflat, Pitch::Bflat, Pitch::C, Pitch::D],
+            scale: [Pitch::Eflat, Pitch::F, Pitch::G, Pitch::Aflat, Pitch::Bflat, Pitch::C,
+                    Pitch::D],
         });
         v.push(Gamut {
             key: Pitch::Aflat,
-            scale: [Pitch::Aflat, Pitch::Bflat, Pitch::C, Pitch::Dflat, Pitch::Eflat, Pitch::F, Pitch::G],
+            scale: [Pitch::Aflat, Pitch::Bflat, Pitch::C, Pitch::Dflat, Pitch::Eflat, Pitch::F,
+                    Pitch::G],
         });
         v.push(Gamut {
             key: Pitch::Dflat,
-            scale: [Pitch::Dflat, Pitch::Eflat, Pitch::F, Pitch::Gflat, Pitch::Aflat, Pitch::Bflat, Pitch::C],
+            scale: [Pitch::Dflat, Pitch::Eflat, Pitch::F, Pitch::Gflat, Pitch::Aflat, Pitch::Bflat,
+                    Pitch::C],
         });
         v.push(Gamut {
             key: Pitch::Fsharp,
-            scale: [Pitch::Fsharp, Pitch::Gsharp, Pitch::Asharp, Pitch::B, Pitch::Csharp, Pitch::Dsharp, Pitch::F],
+            scale: [Pitch::Fsharp, Pitch::Gsharp, Pitch::Asharp, Pitch::B, Pitch::Csharp,
+                    Pitch::Dsharp, Pitch::F],
         });
 
         v

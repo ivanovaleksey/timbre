@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, str};
 use super::Sample;
 
 lazy_static! {
@@ -19,15 +19,18 @@ lazy_static! {
         });
         v.push(Gamut {
             key: Pitch::A,
-            scale: [Pitch::A, Pitch::B, Pitch::Csharp, Pitch::D, Pitch::E, Pitch::Fsharp, Pitch::Gsharp],
+            scale: [Pitch::A, Pitch::B, Pitch::Csharp, Pitch::D, Pitch::E, Pitch::Fsharp,
+                    Pitch::Gsharp],
         });
         v.push(Gamut {
             key: Pitch::E,
-            scale: [Pitch::E, Pitch::Fsharp, Pitch::Gsharp, Pitch::A, Pitch::B, Pitch::Csharp, Pitch::Dsharp],
+            scale: [Pitch::E, Pitch::Fsharp, Pitch::Gsharp, Pitch::A, Pitch::B, Pitch::Csharp,
+                    Pitch::Dsharp],
         });
         v.push(Gamut {
             key: Pitch::B,
-            scale: [Pitch::B, Pitch::Csharp, Pitch::Dsharp, Pitch::E, Pitch::Fsharp, Pitch::Gsharp, Pitch::Asharp],
+            scale: [Pitch::B, Pitch::Csharp, Pitch::Dsharp, Pitch::E, Pitch::Fsharp, Pitch::Gsharp,
+                    Pitch::Asharp],
         });
 
         v.push(Gamut {
@@ -40,19 +43,23 @@ lazy_static! {
         });
         v.push(Gamut {
             key: Pitch::Eflat,
-            scale: [Pitch::Eflat, Pitch::F, Pitch::G, Pitch::Aflat, Pitch::Bflat, Pitch::C, Pitch::D],
+            scale: [Pitch::Eflat, Pitch::F, Pitch::G, Pitch::Aflat, Pitch::Bflat, Pitch::C,
+                    Pitch::D],
         });
         v.push(Gamut {
             key: Pitch::Aflat,
-            scale: [Pitch::Aflat, Pitch::Bflat, Pitch::C, Pitch::Dflat, Pitch::Eflat, Pitch::F, Pitch::G],
+            scale: [Pitch::Aflat, Pitch::Bflat, Pitch::C, Pitch::Dflat, Pitch::Eflat, Pitch::F,
+                    Pitch::G],
         });
         v.push(Gamut {
             key: Pitch::Dflat,
-            scale: [Pitch::Dflat, Pitch::Eflat, Pitch::F, Pitch::Gflat, Pitch::Aflat, Pitch::Bflat, Pitch::C],
+            scale: [Pitch::Dflat, Pitch::Eflat, Pitch::F, Pitch::Gflat, Pitch::Aflat, Pitch::Bflat,
+                    Pitch::C],
         });
         v.push(Gamut {
             key: Pitch::Fsharp,
-            scale: [Pitch::Fsharp, Pitch::Gsharp, Pitch::Asharp, Pitch::B, Pitch::Csharp, Pitch::Dsharp, Pitch::F],
+            scale: [Pitch::Fsharp, Pitch::Gsharp, Pitch::Asharp, Pitch::B, Pitch::Csharp,
+                    Pitch::Dsharp, Pitch::F],
         });
 
         v
@@ -155,6 +162,43 @@ pub enum Pitch {
     Bflat,
     B,
     Bsharp,
+}
+
+impl Pitch {
+    pub fn from_string(value: &str) -> Pitch {
+        value.parse::<Pitch>().unwrap()
+    }
+}
+
+impl str::FromStr for Pitch {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Pitch, ()> {
+        match s {
+            "Cflat" => Ok(Pitch::Cflat),
+            "C" => Ok(Pitch::C),
+            "Csharp" => Ok(Pitch::Csharp),
+            "Dflat" => Ok(Pitch::Dflat),
+            "D" => Ok(Pitch::D),
+            "Dsharp" => Ok(Pitch::Dsharp),
+            "Eflat" => Ok(Pitch::Eflat),
+            "E" => Ok(Pitch::E),
+            "Esharp" => Ok(Pitch::Esharp),
+            "Fflat" => Ok(Pitch::Fflat),
+            "F" => Ok(Pitch::F),
+            "Fsharp" => Ok(Pitch::Fsharp),
+            "Gflat" => Ok(Pitch::Gflat),
+            "G" => Ok(Pitch::G),
+            "Gsharp" => Ok(Pitch::Gsharp),
+            "Aflat" => Ok(Pitch::Aflat),
+            "A" => Ok(Pitch::A),
+            "Asharp" => Ok(Pitch::Asharp),
+            "Bflat" => Ok(Pitch::Bflat),
+            "B" => Ok(Pitch::B),
+            "Bsharp" => Ok(Pitch::Bsharp),
+            _ => Err(()),
+        }
+    }
 }
 
 impl fmt::Display for Pitch {

@@ -9,3 +9,6 @@ gio = "0.3.0"
 [dependencies.gtk]
 features = ["v3_18"]
 version = "0.3.0"
+
+[dependencies.timbre]
+path = "../timbre"

@@ -1,11 +1,13 @@
-use std::{env, fs};
+use std::fs;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
-
 use toml;
+
+use xdg_dirs;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Config {
+    // TODO: use Path instead of String
     pub notes_path: String,
     pub tonal_centers_path: String,
 }
@@ -18,9 +20,8 @@ enum Error {
 
 impl Config {
     fn new() -> Config {
-        let samples_path = Config::app_data_path().join("samples");
-        let notes_path = samples_path.join("notes");
-        let tonal_centers_path = samples_path.join("tonal-centers");
+        let notes_path = xdg_dirs::SAMPLES.join("notes");
+        let tonal_centers_path = xdg_dirs::SAMPLES.join("tonal-centers");
 
         Config {
             notes_path: notes_path.to_str().unwrap().to_string(),
@@ -29,18 +30,7 @@ impl Config {
     }
 
     fn config_path() -> PathBuf {
-        Config::app_data_path().join("config.toml")
-    }
-
-    fn app_data_path() -> PathBuf {
-        let home_dir = env::var("HOME").unwrap();
-        let path = PathBuf::from(home_dir).join(".timbre");
-
-        if !path.exists() {
-            fs::create_dir(&path);
-        }
-
-        path
+        xdg_dirs::CONFIG.join("config.toml")
     }
 
     pub fn load() -> Config {

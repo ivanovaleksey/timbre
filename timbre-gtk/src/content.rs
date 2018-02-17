@@ -174,9 +174,11 @@ impl Content {
             ($btn:ident) => {{
                 let label = $btn.get_label().unwrap();
                 $btn.connect_clicked({
+                    let btn = $btn.clone();
                     clone!(controller);
                     move |_| {
-                        controller.borrow_mut().check_answer(&label);
+                        let res = controller.borrow_mut().check_answer(&label);
+                        toggle_btn_class(&btn, res);
                     }
                 });
             }}
@@ -199,10 +201,14 @@ impl Content {
         macro_rules! alt_answer {
             ($btn:ident, $sharp:expr, $flat:expr) => {{
                 $btn.connect_clicked({
+                    let btn = $btn.clone();
                     clone!(controller);
                     move |_| {
-                        controller.borrow_mut().check_answer(&$sharp);
-                        controller.borrow_mut().check_answer(&$flat);
+                        let res =
+                            controller.borrow_mut().check_answer(&$sharp) ||
+                            controller.borrow_mut().check_answer(&$flat);
+
+                        toggle_btn_class(&btn, res);
                     }
                 });
             }}
@@ -267,4 +273,22 @@ impl Content {
 
         v_box
     }
+}
+
+fn toggle_btn_class(btn: &gtk::Button, flag: bool) {
+    let btn_class = if flag {
+        "suggested-action"
+    } else {
+        "destructive-action"
+    };
+
+    btn.get_style_context().map(|c| c.add_class(&btn_class));
+
+    gtk::timeout_add_seconds(1, {
+        clone!(btn);
+        move || {
+            btn.get_style_context().map(|c| c.remove_class(&btn_class));
+            gtk::Continue(true)
+        }
+    });
 }

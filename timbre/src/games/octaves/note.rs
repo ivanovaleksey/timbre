@@ -164,12 +164,6 @@ pub enum Pitch {
     Bsharp,
 }
 
-impl Pitch {
-    pub fn from_string(value: &str) -> Pitch {
-        value.parse::<Pitch>().unwrap()
-    }
-}
-
 impl str::FromStr for Pitch {
     type Err = ();
 

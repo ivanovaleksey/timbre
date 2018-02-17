@@ -129,7 +129,7 @@ impl Controller {
 
 impl Controller {
     pub fn check_answer(&mut self, answer: &str) -> bool {
-        let answer: Pitch = Pitch::from_string(&answer);
+        let answer = answer.parse::<Pitch>().unwrap();
 
         match self.current_note() {
             Some(note) => {

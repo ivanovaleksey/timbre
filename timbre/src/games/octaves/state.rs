@@ -16,6 +16,8 @@ pub struct State {
     pub right_count: u8,
     // Total played count
     pub total_count: u8,
+    // Answer attempts
+    pub attempts_left: u8,
 }
 
 impl State {
@@ -27,6 +29,7 @@ impl State {
             notes: Vec::new(),
             right_count: 0,
             total_count: 0,
+            attempts_left: 0,
         };
 
         state.generate_notes();

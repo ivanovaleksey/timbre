@@ -128,7 +128,22 @@ impl Controller {
 }
 
 impl Controller {
-    pub fn check_answer(&mut self, answer: &str) -> bool {
+    pub fn check_answers(&mut self, answers: &[&str]) -> Option<bool> {
+        match self.state {
+            Some(ref mut s) => {
+                if s.attempts_left == 0 {
+                    return None;
+                }
+                s.attempts_left -= 1;
+            }
+            None => unreachable!(),
+        }
+
+        let res = answers.iter().any(|a| self.check_answer(a));
+        Some(res)
+    }
+
+    fn check_answer(&mut self, answer: &str) -> bool {
         let answer = answer.parse::<Pitch>().unwrap();
 
         match self.current_note() {
@@ -143,16 +158,15 @@ impl Controller {
 
                 right
             }
-            None => {
-                println!("There is no current note to compare with");
-                false
-            }
+            None => unreachable!(),
         }
     }
 
     fn play_sample(&self, sample: Sample) {
         println!("{}\n", sample);
-        self.gramophone.send(sample);
+        self.gramophone
+            .send(sample)
+            .expect("Failed to play a sample");
     }
 
     fn play_note(&self, note: Note) {
@@ -180,6 +194,7 @@ impl Controller {
                 println!("NEXT NOTE: {:?}", n);
                 self.play_note(n);
                 self.inc_total_count();
+                self.grant_attempts();
             }
             None => println!("Nothing to play\n"),
         }
@@ -240,5 +255,13 @@ impl Controller {
             s.total_count += 1;
         }
         self.count_changed();
+    }
+}
+
+impl Controller {
+    fn grant_attempts(&mut self) {
+        if let Some(ref mut s) = self.state {
+            s.attempts_left = 1;
+        }
     }
 }

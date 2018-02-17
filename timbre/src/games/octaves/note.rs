@@ -1,5 +1,4 @@
 use std::{fmt, str};
-use super::Sample;
 
 lazy_static! {
     pub static ref GAMUTS: Vec<Gamut> = {

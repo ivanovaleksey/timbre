@@ -177,8 +177,10 @@ impl Content {
                     let btn = $btn.clone();
                     clone!(controller);
                     move |_| {
-                        let res = controller.borrow_mut().check_answer(&label);
-                        toggle_btn_class(&btn, res);
+                        let answers: [&str; 1] = [&label];
+                        if let Some(res) = controller.borrow_mut().check_answers(&answers) {
+                            toggle_btn_class(&btn, res);
+                        }
                     }
                 });
             }}
@@ -204,11 +206,10 @@ impl Content {
                     let btn = $btn.clone();
                     clone!(controller);
                     move |_| {
-                        let res =
-                            controller.borrow_mut().check_answer(&$sharp) ||
-                            controller.borrow_mut().check_answer(&$flat);
-
-                        toggle_btn_class(&btn, res);
+                        let answers: [&str; 2] = [&$sharp, &$flat];
+                        if let Some(res) = controller.borrow_mut().check_answers(&answers) {
+                            toggle_btn_class(&btn, res);
+                        }
                     }
                 });
             }}

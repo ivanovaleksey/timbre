@@ -5,6 +5,7 @@ extern crate timbre;
 use gio::{ApplicationExt, ApplicationExtManual};
 use gtk::prelude::*;
 use timbre::games::octaves;
+use timbre::sampler;
 
 use content::Content;
 
@@ -37,6 +38,7 @@ impl App {
         let content = Content::new(&controller);
         let menu_bar = gtk::MenuBar::new();
         menu_bar.append(&build_game_menu(&window, &content));
+        menu_bar.append(&build_control_menu(&window));
 
         let v_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
         v_box.pack_start(&menu_bar, false, false, 0);
@@ -112,6 +114,45 @@ fn build_game_menu(window: &gtk::ApplicationWindow, content: &Content) -> gtk::M
         "_Game",
         [new, load, save, gtk::SeparatorMenuItem::new(), quit]
     )
+}
+
+fn build_control_menu(window: &gtk::ApplicationWindow) -> gtk::MenuItem {
+    let sync = gtk::MenuItem::new_with_mnemonic("_Synchronize samples");
+
+    sync.connect_activate({
+        clone!(window);
+        move |_| {
+            let dialog = gtk::MessageDialog::new(
+                Some(&window),
+                gtk::DialogFlags::MODAL,
+                gtk::MessageType::Info,
+                gtk::ButtonsType::None,
+                "Synchronization...",
+            );
+            dialog.show_now();
+
+            let (type_, text) = match sampler::sync_files() {
+                Ok(_) => (gtk::MessageType::Info, "Done".to_string()),
+                Err(e) => (gtk::MessageType::Error, format!("{}", e)),
+            };
+            dialog.destroy();
+
+            let dialog = gtk::MessageDialog::new(
+                Some(&window),
+                gtk::DialogFlags::MODAL,
+                type_,
+                gtk::ButtonsType::Close,
+                &text,
+            );
+
+            let close_type: i32 = gtk::ResponseType::Close.into();
+            if dialog.run() == close_type {
+                dialog.destroy();
+            }
+        }
+    });
+
+    build_menu!("_Control", [sync])
 }
 
 fn main() {

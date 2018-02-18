@@ -5,5 +5,25 @@ extern crate rand;
 #[macro_use]
 extern crate serde_derive;
 extern crate toml;
+extern crate xdg;
 
 pub mod games;
+
+pub mod xdg_dirs {
+    use std::path::PathBuf;
+    use xdg;
+
+    lazy_static!{
+        pub static ref BASE: xdg::BaseDirectories =
+            xdg::BaseDirectories::with_prefix("timbre").unwrap();
+
+        pub static ref CONFIG: PathBuf =
+            BASE.create_config_directory(BASE.get_config_home()).unwrap();
+
+        pub static ref DATA: PathBuf =
+            BASE.create_data_directory(BASE.get_data_home()).unwrap();
+
+        pub static ref SAMPLES: PathBuf =
+            BASE.create_data_directory("samples").unwrap();
+    }
+}

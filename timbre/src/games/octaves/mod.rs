@@ -1,5 +1,6 @@
 use ears::{AudioController, Sound};
 use std::thread;
+use std::path::PathBuf;
 use std::sync::mpsc;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -7,12 +8,16 @@ use std::rc::Rc;
 pub use self::config::Config;
 use self::state::State;
 use self::note::{Note, Octave, Pitch, Tonality};
+use xdg_dirs;
 
 mod config;
 pub mod note;
 mod state;
 
 lazy_static! {
+    static ref NOTES_PATH: PathBuf = xdg_dirs::SAMPLES.join("notes");
+    static ref TONES_PATH: PathBuf = xdg_dirs::SAMPLES.join("tonal-centers");
+
     static ref EXERSICES: Vec<Exercise> = {
         let mut v = Vec::new();
 
@@ -151,14 +156,14 @@ impl Controller {
     }
 
     fn play_note(&self, note: Note) {
-        let sample_path = format!("{}/{}.ogg", self.config.notes_path, note);
+        let sample_path = format!("{}/{}.ogg", NOTES_PATH.display(), note);
         self.play_sample(sample_path);
     }
 
     pub fn play_tonal_center(&self) {
         let sample_path = format!(
             "{}/IIVVIPAC - {}.ogg",
-            self.config.tonal_centers_path,
+            TONES_PATH.display(),
             self.tonality.unwrap()
         );
         self.play_sample(sample_path);

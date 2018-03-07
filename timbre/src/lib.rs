@@ -1,13 +1,17 @@
 extern crate ears;
+extern crate failure;
 #[macro_use]
 extern crate lazy_static;
 extern crate rand;
+extern crate reqwest;
 #[macro_use]
 extern crate serde_derive;
+extern crate tar;
 extern crate toml;
 extern crate xdg;
 
 pub mod games;
+pub mod sampler;
 
 pub mod xdg_dirs {
     use std::path::PathBuf;

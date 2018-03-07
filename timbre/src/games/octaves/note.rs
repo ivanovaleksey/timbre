@@ -1,5 +1,4 @@
 use std::{fmt, str};
-use super::Sample;
 
 lazy_static! {
     pub static ref GAMUTS: Vec<Gamut> = {
@@ -162,12 +161,6 @@ pub enum Pitch {
     Bflat,
     B,
     Bsharp,
-}
-
-impl Pitch {
-    pub fn from_string(value: &str) -> Pitch {
-        value.parse::<Pitch>().unwrap()
-    }
 }
 
 impl str::FromStr for Pitch {

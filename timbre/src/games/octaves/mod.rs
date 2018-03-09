@@ -68,7 +68,7 @@ lazy_static! {
 
 #[derive(Clone, Debug)]
 pub struct Exercise {
-    num: u8,
+    pub num: u8,
     octaves: Vec<Octave>,
 }
 
@@ -80,6 +80,8 @@ pub struct Controller {
     state: Option<State>,
     tonality: Option<Tonality>,
     count_observers: Vec<Box<Fn(&Controller) -> ()>>,
+    pub next_exercise_observer: Option<Box<Fn(&'static Exercise) -> ()>>,
+    pub game_over_observer: Option<Box<Fn() -> ()>>,
 }
 
 pub type SharedController = Rc<RefCell<Controller>>;
@@ -104,6 +106,8 @@ impl Controller {
             // TODO: is it required?
             tonality: None,
             count_observers: Vec::new(),
+            next_exercise_observer: None,
+            game_over_observer: None,
         }
     }
 
@@ -184,10 +188,25 @@ impl Controller {
     }
 
     pub fn play_next_note(&mut self) {
-        let note = match self.state {
+        let mut note = match self.state {
             Some(ref mut s) => s.next_note(),
             None => None,
         };
+
+        if note.is_none() {
+            // Looks like this exercise is over, try to unlock the next one
+            if let Some(ref mut s) = self.state {
+                if s.total_count == s.right_count {
+                    let exercise = s.next_exercise();
+                    if let Some(ref observer) = self.next_exercise_observer {
+                        if let Some(exercise) = exercise {
+                            observer(exercise);
+                        }
+                    }
+                    note = s.next_note();
+                }
+            }
+        }
 
         match note {
             Some(n) => {
@@ -196,7 +215,11 @@ impl Controller {
                 self.inc_total_count();
                 self.grant_attempts();
             }
-            None => println!("Nothing to play\n"),
+            None => {
+                if let Some(ref observer) = self.game_over_observer {
+                    observer();
+                }
+            }
         }
     }
 

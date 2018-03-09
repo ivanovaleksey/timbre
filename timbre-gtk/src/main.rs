@@ -46,6 +46,44 @@ impl App {
 
         window.add(&v_box);
 
+        let observer = {
+            clone!(window);
+            move |exercise: &'static octaves::Exercise| {
+                println!("Ex observer: {:?}", exercise);
+
+                let dialog = gtk::MessageDialog::new(
+                    Some(&window),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Info,
+                    gtk::ButtonsType::Ok,
+                    &format!("Great!\n Let's start exercise #{}", exercise.num),
+                );
+                let ok: i32 = gtk::ResponseType::Ok.into();
+                if dialog.run() == ok {
+                    dialog.destroy();
+                }
+            }
+        };
+        controller.borrow_mut().next_exercise_observer = Some(Box::new(observer));
+
+        let observer = {
+            clone!(window);
+            move || {
+                let dialog = gtk::MessageDialog::new(
+                    Some(&window),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Info,
+                    gtk::ButtonsType::Ok,
+                    &format!("Game over"),
+                );
+                let ok: i32 = gtk::ResponseType::Ok.into();
+                if dialog.run() == ok {
+                    dialog.destroy();
+                }
+            }
+        };
+        controller.borrow_mut().game_over_observer = Some(Box::new(observer));
+
         App { window, content }
     }
 

@@ -7,7 +7,7 @@ pub struct State {
     // Chosen tonality
     tonality: Tonality,
     // Current exercise
-    exercise: Exercise,
+    pub exercise: Exercise,
     // Current note
     pub note: Option<Note>,
     // Notes to play
@@ -26,7 +26,7 @@ impl State {
             tonality,
             exercise,
             note: None,
-            notes: Vec::new(),
+            notes: vec![],
             right_count: 0,
             total_count: 0,
             attempts_left: 0,
@@ -80,6 +80,18 @@ impl State {
             let index = self.notes.iter().position(|&n| n == note);
             self.notes.remove(index.unwrap());
         }
+    }
+
+    pub fn next_exercise(&mut self) -> Option<&'static Exercise> {
+        use games::octaves::EXERCISES;
+
+        let num = self.exercise.num + 1;
+        EXERCISES.iter().find(|&ex| ex.num == num).and_then(|ex| {
+            self.exercise = ex.clone();
+            self.generate_notes();
+
+            Some(ex)
+        })
     }
 }
 

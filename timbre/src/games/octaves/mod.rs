@@ -18,7 +18,7 @@ lazy_static! {
     static ref NOTES_PATH: PathBuf = xdg_dirs::SAMPLES.join("notes");
     static ref TONES_PATH: PathBuf = xdg_dirs::SAMPLES.join("tonal-centers");
 
-    static ref EXERSICES: Vec<Exercise> = {
+    static ref EXERCISES: Vec<Exercise> = {
         let mut v = Vec::new();
 
         let mut octaves = Vec::new();
@@ -113,8 +113,8 @@ impl Controller {
     }
 
     pub fn new_game(&mut self, tonality: Tonality) {
-        let exersice = EXERSICES.first().cloned().unwrap();
-        let state = State::new(tonality, exersice);
+        let exercise = EXERCISES.first().cloned().unwrap();
+        let state = State::new(tonality, exercise);
         self.state = Some(state);
         self.tonality = Some(tonality);
         self.count_changed();

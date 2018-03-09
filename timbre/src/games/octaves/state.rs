@@ -6,8 +6,8 @@ use super::note::{Gamut, Note, Tonality, GAMUTS};
 pub struct State {
     // Chosen tonality
     tonality: Tonality,
-    // Current exersice
-    exersice: Exercise,
+    // Current exercise
+    exercise: Exercise,
     // Current note
     pub note: Option<Note>,
     // Notes to play
@@ -21,10 +21,10 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(tonality: Tonality, exersice: Exercise) -> State {
+    pub fn new(tonality: Tonality, exercise: Exercise) -> State {
         let mut state = State {
             tonality,
-            exersice,
+            exercise,
             note: None,
             notes: Vec::new(),
             right_count: 0,
@@ -47,7 +47,7 @@ impl State {
             .iter()
             .find(|g| g.key == self.tonality.0)
             .expect("No gamut for this tonality");
-        let octaves = &self.exersice.octaves;
+        let octaves = &self.exercise.octaves;
 
         for octave in octaves.iter() {
             for pitch in gamut.scale.iter() {
@@ -86,14 +86,14 @@ impl State {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::EXERSICES;
+    use super::super::EXERCISES;
     use super::super::note::{Octave, Pitch};
 
     #[test]
     fn generate_notes_first_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(0).cloned().unwrap();
-        let state = State::new(tonality, exersice);
+        let exercise = EXERCISES.iter().nth(0).cloned().unwrap();
+        let state = State::new(tonality, exercise);
 
         let notes = [
             Note {
@@ -136,8 +136,8 @@ mod tests {
     #[test]
     fn generate_notes_second_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(1).cloned().unwrap();
-        let state = State::new(tonality, exersice);
+        let exercise = EXERCISES.iter().nth(1).cloned().unwrap();
+        let state = State::new(tonality, exercise);
 
         let notes = [
             Note {
@@ -208,8 +208,8 @@ mod tests {
     #[test]
     fn next_note_first_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(0).cloned().unwrap();
-        let mut state = State::new(tonality, exersice);
+        let exercise = EXERCISES.iter().nth(0).cloned().unwrap();
+        let mut state = State::new(tonality, exercise);
 
         assert!(state.note.is_none());
 
@@ -272,8 +272,8 @@ mod tests {
     #[test]
     fn next_note_second_ex() {
         let tonality = Tonality(Pitch::C);
-        let exersice = EXERSICES.iter().nth(1).cloned().unwrap();
-        let mut state = State::new(tonality, exersice);
+        let exercise = EXERCISES.iter().nth(1).cloned().unwrap();
+        let mut state = State::new(tonality, exercise);
 
         assert!(state.note.is_none());
 

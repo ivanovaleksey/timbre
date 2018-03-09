@@ -1,3 +1,4 @@
+extern crate diesel;
 extern crate gio;
 extern crate gtk;
 extern crate timbre;
@@ -27,7 +28,7 @@ impl App {
         let config = octaves::Config::load();
         let controller = octaves::Controller::new_shared(config);
 
-        let window = build_window(gtk_app);
+        let window = build_window(gtk_app, &controller);
         window.set_resizable(false);
 
         let header = gtk::HeaderBar::new();
@@ -95,7 +96,10 @@ impl App {
     }
 }
 
-fn build_window(app: &gtk::Application) -> gtk::ApplicationWindow {
+fn build_window(
+    app: &gtk::Application,
+    controller: &octaves::SharedController,
+) -> gtk::ApplicationWindow {
     let window = gtk::ApplicationWindow::new(app);
 
     window.set_title("Timbre");
@@ -104,9 +108,27 @@ fn build_window(app: &gtk::Application) -> gtk::ApplicationWindow {
     window.set_default_size(800, 500);
 
     window.connect_delete_event({
-        clone!(window);
+        clone!(controller, window);
         move |_, _| {
-            window.destroy();
+            let game = controller.borrow().save_game();
+
+            if controller.borrow().is_finished() {
+                window.destroy();
+            } else {
+                let dialog = gtk::MessageDialog::new(
+                    Some(&window),
+                    gtk::DialogFlags::DESTROY_WITH_PARENT,
+                    gtk::MessageType::Question,
+                    gtk::ButtonsType::YesNo,
+                    &format!("Save game?"),
+                );
+                let yes: i32 = gtk::ResponseType::Yes.into();
+                if dialog.run() == yes {
+                    controller.borrow().save_state(game);
+                }
+                dialog.destroy();
+            }
+
             Inhibit(false)
         }
     });

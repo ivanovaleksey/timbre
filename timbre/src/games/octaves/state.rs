@@ -5,13 +5,13 @@ use super::note::{Gamut, Note, Tonality, GAMUTS};
 #[derive(Debug)]
 pub struct State {
     // Chosen tonality
-    tonality: Tonality,
+    pub tonality: Tonality,
     // Current exercise
     pub exercise: Exercise,
     // Current note
     pub note: Option<Note>,
     // Notes to play
-    notes: Vec<Note>,
+    pub notes: Vec<Note>,
     // Right answered count
     pub right_count: u8,
     // Total played count

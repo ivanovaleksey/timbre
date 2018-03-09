@@ -1,3 +1,6 @@
+extern crate chrono;
+#[macro_use]
+extern crate diesel;
 extern crate ears;
 extern crate failure;
 #[macro_use]
@@ -10,8 +13,16 @@ extern crate tar;
 extern crate toml;
 extern crate xdg;
 
+pub fn establish_connection() -> diesel::SqliteConnection {
+    use diesel::prelude::*;
+    let database_url = xdg_dirs::DATA.join("timbre.db");
+    diesel::SqliteConnection::establish(database_url.to_str().unwrap())
+        .expect(&format!("Error connecting to {}", database_url.display()))
+}
+
 pub mod games;
 pub mod sampler;
+pub mod schema;
 
 pub mod xdg_dirs {
     use std::path::PathBuf;

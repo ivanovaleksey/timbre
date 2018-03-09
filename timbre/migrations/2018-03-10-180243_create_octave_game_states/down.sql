@@ -1,0 +1,1 @@
+DROP TABLE octave_game_states;

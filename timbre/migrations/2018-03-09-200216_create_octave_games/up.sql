@@ -1,0 +1,6 @@
+CREATE TABLE octave_games (
+  id INTEGER NOT NULL PRIMARY KEY,
+  tonality TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  finished_at TIMESTAMP
+);

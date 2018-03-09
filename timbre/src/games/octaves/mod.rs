@@ -1,3 +1,5 @@
+use diesel;
+use diesel::prelude::*;
 use ears::{AudioController, Sound};
 use std::thread;
 use std::path::PathBuf;
@@ -8,9 +10,13 @@ use std::rc::Rc;
 pub use self::config::Config;
 use self::state::State;
 use self::note::{Note, Octave, Pitch, Tonality};
+use games::octaves::models::Game;
+use establish_connection;
+use schema::octave_games;
 use xdg_dirs;
 
 mod config;
+pub mod models;
 pub mod note;
 mod state;
 
@@ -25,42 +31,42 @@ lazy_static! {
         octaves.push(Octave::First);
         v.push(Exercise { num: 1, octaves: octaves });
 
-        let mut octaves = Vec::new();
-        octaves.push(Octave::First);
-        octaves.push(Octave::Second);
-        v.push(Exercise { num: 2, octaves: octaves });
+        // let mut octaves = Vec::new();
+        // octaves.push(Octave::First);
+        // octaves.push(Octave::Second);
+        // v.push(Exercise { num: 2, octaves: octaves });
 
-        let mut octaves = Vec::new();
-        octaves.push(Octave::Small);
-        octaves.push(Octave::First);
-        v.push(Exercise { num: 3, octaves: octaves });
+        // let mut octaves = Vec::new();
+        // octaves.push(Octave::Small);
+        // octaves.push(Octave::First);
+        // v.push(Exercise { num: 3, octaves: octaves });
 
-        let mut octaves = Vec::new();
-        octaves.push(Octave::First);
-        octaves.push(Octave::Second);
-        octaves.push(Octave::Third);
-        v.push(Exercise { num: 4, octaves: octaves });
+        // let mut octaves = Vec::new();
+        // octaves.push(Octave::First);
+        // octaves.push(Octave::Second);
+        // octaves.push(Octave::Third);
+        // v.push(Exercise { num: 4, octaves: octaves });
 
-        let mut octaves = Vec::new();
-        octaves.push(Octave::Great);
-        octaves.push(Octave::Small);
-        octaves.push(Octave::First);
-        v.push(Exercise { num: 5, octaves: octaves });
+        // let mut octaves = Vec::new();
+        // octaves.push(Octave::Great);
+        // octaves.push(Octave::Small);
+        // octaves.push(Octave::First);
+        // v.push(Exercise { num: 5, octaves: octaves });
 
-        let mut octaves = Vec::new();
-        octaves.push(Octave::Small);
-        octaves.push(Octave::First);
-        octaves.push(Octave::Second);
-        octaves.push(Octave::Third);
-        v.push(Exercise { num: 6, octaves: octaves });
+        // let mut octaves = Vec::new();
+        // octaves.push(Octave::Small);
+        // octaves.push(Octave::First);
+        // octaves.push(Octave::Second);
+        // octaves.push(Octave::Third);
+        // v.push(Exercise { num: 6, octaves: octaves });
 
-        let mut octaves = Vec::new();
-        octaves.push(Octave::Great);
-        octaves.push(Octave::Small);
-        octaves.push(Octave::First);
-        octaves.push(Octave::Second);
-        octaves.push(Octave::Third);
-        v.push(Exercise { num: 7, octaves: octaves });
+        // let mut octaves = Vec::new();
+        // octaves.push(Octave::Great);
+        // octaves.push(Octave::Small);
+        // octaves.push(Octave::First);
+        // octaves.push(Octave::Second);
+        // octaves.push(Octave::Third);
+        // v.push(Exercise { num: 7, octaves: octaves });
 
         v
     };
@@ -122,13 +128,72 @@ impl Controller {
         self.state = Some(state);
         self.tonality = Some(tonality);
         self.count_changed();
+
+        use games::octaves::models::NewGame;
+
+        let new_game = NewGame {
+            tonality: tonality.to_string(),
+        };
+
+        let conn = establish_connection();
+        diesel::insert_into(octave_games::table)
+            .values(&new_game)
+            .execute(&conn)
+            .expect("Failed to save a game");
     }
 
     // TODO: implement
-    fn load_game() {}
+    pub fn load_game(&mut self) {}
 
-    // TODO: implement
-    fn save_game() {}
+    pub fn save_game(&self) -> Game {
+        use chrono::Utc;
+
+        let conn = establish_connection();
+
+        let current_game = octave_games::table
+            .filter(octave_games::finished_at.is_null())
+            .order(octave_games::created_at.desc())
+            .first::<Game>(&conn)
+            .unwrap();
+
+        diesel::update(octave_games::table)
+            .set(octave_games::finished_at.eq(Utc::now().naive_utc()))
+            .filter(octave_games::id.eq(current_game.id))
+            .execute(&conn)
+            .unwrap();
+
+        octave_games::table
+            .find(current_game.id)
+            .get_result(&conn)
+            .unwrap()
+    }
+
+    pub fn save_state(&self, game: Game) {
+        use games::octaves::models::NewGameState;
+        use schema::octave_game_states;
+
+        if let Some(ref state) = self.state {
+            let game_state = NewGameState {
+                exercise: state.exercise.num as i32,
+                note: state.note.map_or("".to_owned(), |note| note.to_string()),
+                notes: state
+                    .notes
+                    .iter()
+                    .map(|n| n.to_string())
+                    .collect::<Vec<_>>()
+                    .join(","),
+                right_count: state.right_count as i32,
+                total_count: state.total_count as i32,
+                game_id: game.id,
+            };
+
+            let conn = establish_connection();
+            diesel::insert_into(octave_game_states::table)
+                .values(&game_state)
+                .execute(&conn)
+                .unwrap();
+        }
+    }
 }
 
 impl Controller {
@@ -217,6 +282,7 @@ impl Controller {
             }
             None => {
                 if let Some(ref observer) = self.game_over_observer {
+                    self.save_game();
                     observer();
                 }
             }
@@ -285,6 +351,13 @@ impl Controller {
     fn grant_attempts(&mut self) {
         if let Some(ref mut s) = self.state {
             s.attempts_left = 1;
+        }
+    }
+
+    pub fn is_finished(&self) -> bool {
+        match self.state {
+            Some(ref state) => state.notes.is_empty(),
+            None => true,
         }
     }
 }

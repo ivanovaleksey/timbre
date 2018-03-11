@@ -21,6 +21,7 @@ pub struct NewGame {
 #[table_name = "octave_game_states"]
 pub struct GameState {
     pub id: i32,
+    pub tonality: String,
     pub exercise: i32,
     pub note: String,
     pub notes: String,
@@ -32,10 +33,21 @@ pub struct GameState {
 #[derive(Insertable)]
 #[table_name = "octave_game_states"]
 pub struct NewGameState {
+    pub tonality: String,
     pub exercise: i32,
     pub note: String,
     pub notes: String,
     pub right_count: i32,
     pub total_count: i32,
     pub game_id: i32,
+}
+
+#[derive(AsChangeset)]
+#[table_name = "octave_game_states"]
+pub struct GameStateChangeset {
+    pub exercise: i32,
+    pub note: String,
+    pub notes: String,
+    pub right_count: i32,
+    pub total_count: i32,
 }

@@ -1,6 +1,8 @@
 use rand::{thread_rng, Rng};
-use super::Exercise;
+use games::octaves::{Exercise, EXERCISES};
+
 use super::note::{Gamut, Note, Tonality, GAMUTS};
+use games::octaves::models::{GameState, GameStateChangeset};
 
 #[derive(Debug)]
 pub struct State {
@@ -36,11 +38,47 @@ impl State {
         state
     }
 
-    // TODO: implement
-    // pub fn load() -> State {}
+    pub fn load(game_state: &GameState) -> State {
+        let tonality = game_state.tonality.parse::<Tonality>().unwrap();
+        let exercise = EXERCISES
+            .iter()
+            .find(|&ex| ex.num == game_state.exercise as u8)
+            .cloned()
+            .unwrap();
+        let note = game_state.note.parse::<Note>().unwrap();
+        let notes = game_state
+            .notes
+            .split(",")
+            .map(|s| s.parse::<Note>().unwrap())
+            .collect::<Vec<_>>();
+
+        State {
+            tonality,
+            exercise,
+            note: Some(note),
+            notes,
+            right_count: game_state.right_count as u8,
+            total_count: game_state.total_count as u8,
+            attempts_left: 0,
+        }
+    }
 
     // TODO: implement
     // pub fn save(&self) {}
+
+    pub fn changeset(&self) -> GameStateChangeset {
+        GameStateChangeset {
+            exercise: self.exercise.num as i32,
+            note: self.note.map_or("".to_owned(), |note| note.to_string()),
+            notes: self.notes
+                .iter()
+                .map(|n| n.to_string())
+                .collect::<Vec<_>>()
+                .join(","),
+            right_count: self.right_count as i32,
+            total_count: self.total_count as i32,
+        }
+    }
 
     fn generate_notes(&mut self) {
         let gamut: &Gamut = GAMUTS
@@ -83,8 +121,6 @@ impl State {
     }
 
     pub fn next_exercise(&mut self) -> Option<&'static Exercise> {
-        use games::octaves::EXERCISES;
-
         let num = self.exercise.num + 1;
         EXERCISES.iter().find(|&ex| ex.num == num).and_then(|ex| {
             self.exercise = ex.clone();
@@ -98,7 +134,6 @@ impl State {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::EXERCISES;
     use super::super::note::{Octave, Pitch};
 
     #[test]

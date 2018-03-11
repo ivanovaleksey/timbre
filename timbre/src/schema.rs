@@ -1,6 +1,7 @@
 table! {
     octave_game_states (id) {
         id -> Integer,
+        tonality -> Text,
         exercise -> Integer,
         note -> Text,
         notes -> Text,

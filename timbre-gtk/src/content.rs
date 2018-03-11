@@ -97,28 +97,30 @@ impl Content {
 
         use diesel::prelude::*;
         use timbre;
-        use timbre::schema::octave_games;
+        use timbre::schema::{octave_game_states, octave_games};
         use timbre::games::octaves::models;
 
-        //        let conn = timbre::establish_connection();
-        //        let history = octave_games::table
-        //            .filter(octave_games::finished_at.is_not_null())
-        //            .order(octave_games::created_at.desc())
-        //            .limit(5)
-        //            .load::<models::Game>(&conn)
-        //            .unwrap();
-        //
-        //        for (i, game) in history.iter().enumerate() {
-        //            let s = format!(
-        //                "{}. ex. #{}, {} / {}",
-        //                i + 1,
-        //                game.exercise,
-        //                game.right_count,
-        //                game.total_count,
-        //            );
-        //            let l = gtk::Label::new(s.as_str());
-        //            box_3.pack_start(&l, false, false, 0);
-        //        }
+        let conn = timbre::establish_connection();
+        let history = octave_games::table
+            .inner_join(octave_game_states::table)
+            .select(octave_game_states::all_columns)
+            .filter(octave_games::finished_at.is_not_null())
+            .order(octave_games::created_at.desc())
+            .limit(5)
+            .load::<models::GameState>(&conn)
+            .unwrap();
+
+        for (i, game) in history.iter().enumerate() {
+            let s = format!(
+                "{}. ex. #{}, {} / {}",
+                i + 1,
+                game.exercise,
+                game.right_count,
+                game.total_count,
+            );
+            let l = gtk::Label::new(s.as_str());
+            box_3.pack_start(&l, false, false, 0);
+        }
 
         container.pack_start(&box_1, false, false, 0);
         container.pack_start(&box_2, false, false, 0);

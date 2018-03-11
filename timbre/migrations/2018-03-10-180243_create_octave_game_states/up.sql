@@ -1,5 +1,6 @@
 CREATE TABLE octave_game_states (
   id INTEGER NOT NULL PRIMARY KEY,
+  tonality TEXT NOT NULL,
   exercise INTEGER NOT NULL DEFAULT 1,
   note TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',

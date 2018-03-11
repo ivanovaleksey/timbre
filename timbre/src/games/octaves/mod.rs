@@ -1,6 +1,8 @@
+use chrono::Utc;
 use diesel;
 use diesel::prelude::*;
 use ears::{AudioController, Sound};
+
 use std::thread;
 use std::path::PathBuf;
 use std::sync::mpsc;
@@ -10,9 +12,9 @@ use std::rc::Rc;
 pub use self::config::Config;
 use self::state::State;
 use self::note::{Note, Octave, Pitch, Tonality};
-use games::octaves::models::Game;
+use games::octaves::models::{Game, GameState, NewGame, NewGameState};
 use establish_connection;
-use schema::octave_games;
+use schema::{octave_games, octave_game_states};
 use xdg_dirs;
 
 mod config;
@@ -31,42 +33,42 @@ lazy_static! {
         octaves.push(Octave::First);
         v.push(Exercise { num: 1, octaves: octaves });
 
-        // let mut octaves = Vec::new();
-        // octaves.push(Octave::First);
-        // octaves.push(Octave::Second);
-        // v.push(Exercise { num: 2, octaves: octaves });
+        let mut octaves = Vec::new();
+        octaves.push(Octave::First);
+        octaves.push(Octave::Second);
+        v.push(Exercise { num: 2, octaves: octaves });
 
-        // let mut octaves = Vec::new();
-        // octaves.push(Octave::Small);
-        // octaves.push(Octave::First);
-        // v.push(Exercise { num: 3, octaves: octaves });
+        let mut octaves = Vec::new();
+        octaves.push(Octave::Small);
+        octaves.push(Octave::First);
+        v.push(Exercise { num: 3, octaves: octaves });
 
-        // let mut octaves = Vec::new();
-        // octaves.push(Octave::First);
-        // octaves.push(Octave::Second);
-        // octaves.push(Octave::Third);
-        // v.push(Exercise { num: 4, octaves: octaves });
+        let mut octaves = Vec::new();
+        octaves.push(Octave::First);
+        octaves.push(Octave::Second);
+        octaves.push(Octave::Third);
+        v.push(Exercise { num: 4, octaves: octaves });
 
-        // let mut octaves = Vec::new();
-        // octaves.push(Octave::Great);
-        // octaves.push(Octave::Small);
-        // octaves.push(Octave::First);
-        // v.push(Exercise { num: 5, octaves: octaves });
+        let mut octaves = Vec::new();
+        octaves.push(Octave::Great);
+        octaves.push(Octave::Small);
+        octaves.push(Octave::First);
+        v.push(Exercise { num: 5, octaves: octaves });
 
-        // let mut octaves = Vec::new();
-        // octaves.push(Octave::Small);
-        // octaves.push(Octave::First);
-        // octaves.push(Octave::Second);
-        // octaves.push(Octave::Third);
-        // v.push(Exercise { num: 6, octaves: octaves });
+        let mut octaves = Vec::new();
+        octaves.push(Octave::Small);
+        octaves.push(Octave::First);
+        octaves.push(Octave::Second);
+        octaves.push(Octave::Third);
+        v.push(Exercise { num: 6, octaves: octaves });
 
-        // let mut octaves = Vec::new();
-        // octaves.push(Octave::Great);
-        // octaves.push(Octave::Small);
-        // octaves.push(Octave::First);
-        // octaves.push(Octave::Second);
-        // octaves.push(Octave::Third);
-        // v.push(Exercise { num: 7, octaves: octaves });
+        let mut octaves = Vec::new();
+        octaves.push(Octave::Great);
+        octaves.push(Octave::Small);
+        octaves.push(Octave::First);
+        octaves.push(Octave::Second);
+        octaves.push(Octave::Third);
+        v.push(Exercise { num: 7, octaves: octaves });
 
         v
     };
@@ -84,7 +86,7 @@ pub struct Controller {
     config: Config,
     gramophone: mpsc::Sender<Sample>,
     state: Option<State>,
-    tonality: Option<Tonality>,
+    // tonality: Option<Tonality>,
     count_observers: Vec<Box<Fn(&Controller) -> ()>>,
     pub next_exercise_observer: Option<Box<Fn(&'static Exercise) -> ()>>,
     pub game_over_observer: Option<Box<Fn() -> ()>>,
@@ -110,7 +112,7 @@ impl Controller {
             gramophone: tx,
             state: None,
             // TODO: is it required?
-            tonality: None,
+            // tonality: None,
             count_observers: Vec::new(),
             next_exercise_observer: None,
             game_over_observer: None,
@@ -125,11 +127,7 @@ impl Controller {
     pub fn new_game(&mut self, tonality: Tonality) {
         let exercise = EXERCISES.first().cloned().unwrap();
         let state = State::new(tonality, exercise);
-        self.state = Some(state);
-        self.tonality = Some(tonality);
-        self.count_changed();
-
-        use games::octaves::models::NewGame;
+        self.new_game_with_state(state);
 
         let new_game = NewGame {
             tonality: tonality.to_string(),
@@ -142,57 +140,88 @@ impl Controller {
             .expect("Failed to save a game");
     }
 
-    // TODO: implement
-    pub fn load_game(&mut self) {}
+    fn new_game_with_state(&mut self, state: State) {
+        self.state = Some(state);
+        self.count_changed();
+    }
 
-    pub fn save_game(&self) -> Game {
-        use chrono::Utc;
-
+    pub fn load_game(&mut self) -> Option<GameState> {
         let conn = establish_connection();
+        let game = Controller::current_game()?;
 
-        let current_game = octave_games::table
-            .filter(octave_games::finished_at.is_null())
-            .order(octave_games::created_at.desc())
-            .first::<Game>(&conn)
+        let game_state = GameState::belonging_to(&game)
+            .first::<GameState>(&conn)
+            .optional()
             .unwrap();
+
+        if let Some(ref s) = game_state {
+            let state = State::load(s);
+            self.new_game_with_state(state);
+        }
+
+        game_state
+    }
+
+    pub fn finish_game(&self) -> Game {
+        let conn = establish_connection();
+        let game = Controller::current_game().unwrap();
 
         diesel::update(octave_games::table)
             .set(octave_games::finished_at.eq(Utc::now().naive_utc()))
-            .filter(octave_games::id.eq(current_game.id))
+            .filter(octave_games::id.eq(game.id))
             .execute(&conn)
             .unwrap();
 
-        octave_games::table
-            .find(current_game.id)
-            .get_result(&conn)
-            .unwrap()
+        octave_games::table.find(game.id).get_result(&conn).unwrap()
     }
 
-    pub fn save_state(&self, game: Game) {
-        use games::octaves::models::NewGameState;
-        use schema::octave_game_states;
-
+    pub fn save_state(&self) {
         if let Some(ref state) = self.state {
-            let game_state = NewGameState {
-                exercise: state.exercise.num as i32,
-                note: state.note.map_or("".to_owned(), |note| note.to_string()),
-                notes: state
-                    .notes
-                    .iter()
-                    .map(|n| n.to_string())
-                    .collect::<Vec<_>>()
-                    .join(","),
-                right_count: state.right_count as i32,
-                total_count: state.total_count as i32,
-                game_id: game.id,
-            };
-
             let conn = establish_connection();
-            diesel::insert_into(octave_game_states::table)
-                .values(&game_state)
-                .execute(&conn)
+            let game = Controller::current_game().unwrap();
+
+            let game_state = GameState::belonging_to(&game)
+                .first::<GameState>(&conn)
+                .optional()
                 .unwrap();
+            match game_state {
+                Some(current_state) => {
+                    let changeset = state.changeset();
+
+                    diesel::update(&current_state)
+                        .set(&changeset)
+                        .execute(&conn)
+                        .unwrap();
+                }
+                None => {
+                    let changeset = state.changeset();
+                    let new_state = NewGameState {
+                        tonality: state.tonality.to_string(),
+                        exercise: changeset.exercise,
+                        note: changeset.note,
+                        notes: changeset.notes,
+                        right_count: changeset.right_count,
+                        total_count: changeset.total_count,
+                        game_id: game.id,
+                    };
+
+                    diesel::insert_into(octave_game_states::table)
+                        .values(&new_state)
+                        .execute(&conn)
+                        .unwrap();
+                }
+            }
         }
+    }
+
+    fn current_game() -> Option<Game> {
+        let conn = establish_connection();
+        octave_games::table
+            .filter(octave_games::finished_at.is_null())
+            .order(octave_games::created_at.desc())
+            .first::<Game>(&conn)
+            .optional()
+            .unwrap()
     }
 }
 
@@ -244,12 +273,10 @@ impl Controller {
     }
 
     pub fn play_tonal_center(&self) {
-        let sample_path = format!(
-            "{}/IIVVIPAC - {}.ogg",
-            TONES_PATH.display(),
-            self.tonality.unwrap()
-        );
-        self.play_sample(sample_path);
+        if let Some(ref state) = self.state {
+            let sample_path = format!("{}/IIVVIPAC - {}.ogg", TONES_PATH.display(), state.tonality);
+            self.play_sample(sample_path);
+        }
     }
 
     pub fn play_next_note(&mut self) {
@@ -282,7 +309,9 @@ impl Controller {
             }
             None => {
                 if let Some(ref observer) = self.game_over_observer {
-                    self.save_game();
+                    self.save_state();
+                    self.finish_game();
+
                     observer();
                 }
             }

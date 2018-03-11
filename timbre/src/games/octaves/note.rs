@@ -92,6 +92,20 @@ pub struct Note {
     pub pitch: Pitch,
 }
 
+impl str::FromStr for Note {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Note, ()> {
+        let chars = &s.chars().collect::<Vec<_>>()[..];
+        let (octave_str, pitch_str) = chars.split_last().unwrap();
+
+        let octave = octave_str.to_string().parse::<Octave>()?;
+        let pitch = pitch_str.into_iter().collect::<String>().parse::<Pitch>()?;
+
+        Ok(Note { octave, pitch })
+    }
+}
+
 impl fmt::Display for Note {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}{}", self.pitch, self.octave as u8)
@@ -106,6 +120,22 @@ pub enum Octave {
     Second = 5,
     Third = 6,
     Fourth = 7,
+}
+
+impl str::FromStr for Octave {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Octave, ()> {
+        match s {
+            "2" => Ok(Octave::Great),
+            "3" => Ok(Octave::Small),
+            "4" => Ok(Octave::First),
+            "5" => Ok(Octave::Second),
+            "6" => Ok(Octave::Third),
+            "7" => Ok(Octave::Fourth),
+            _ => Err(()),
+        }
+    }
 }
 
 impl Octave {
@@ -123,8 +153,17 @@ impl Octave {
 
 type Scale = [Pitch; 7];
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Tonality(pub Pitch);
+
+impl str::FromStr for Tonality {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Tonality, ()> {
+        let pitch = s[..s.len() - 3].parse::<Pitch>()?;
+        Ok(Tonality(pitch))
+    }
+}
 
 impl fmt::Display for Tonality {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -168,27 +207,27 @@ impl str::FromStr for Pitch {
 
     fn from_str(s: &str) -> Result<Pitch, ()> {
         match s {
-            "Cflat" => Ok(Pitch::Cflat),
+            "Cb" => Ok(Pitch::Cflat),
             "C" => Ok(Pitch::C),
-            "Csharp" => Ok(Pitch::Csharp),
-            "Dflat" => Ok(Pitch::Dflat),
+            "C#" => Ok(Pitch::Csharp),
+            "Db" => Ok(Pitch::Dflat),
             "D" => Ok(Pitch::D),
-            "Dsharp" => Ok(Pitch::Dsharp),
-            "Eflat" => Ok(Pitch::Eflat),
+            "D#" => Ok(Pitch::Dsharp),
+            "Eb" => Ok(Pitch::Eflat),
             "E" => Ok(Pitch::E),
-            "Esharp" => Ok(Pitch::Esharp),
-            "Fflat" => Ok(Pitch::Fflat),
+            "E#" => Ok(Pitch::Esharp),
+            "Fb" => Ok(Pitch::Fflat),
             "F" => Ok(Pitch::F),
-            "Fsharp" => Ok(Pitch::Fsharp),
-            "Gflat" => Ok(Pitch::Gflat),
+            "F#" => Ok(Pitch::Fsharp),
+            "Gb" => Ok(Pitch::Gflat),
             "G" => Ok(Pitch::G),
-            "Gsharp" => Ok(Pitch::Gsharp),
-            "Aflat" => Ok(Pitch::Aflat),
+            "G#" => Ok(Pitch::Gsharp),
+            "Ab" => Ok(Pitch::Aflat),
             "A" => Ok(Pitch::A),
-            "Asharp" => Ok(Pitch::Asharp),
-            "Bflat" => Ok(Pitch::Bflat),
+            "A#" => Ok(Pitch::Asharp),
+            "Bb" => Ok(Pitch::Bflat),
             "B" => Ok(Pitch::B),
-            "Bsharp" => Ok(Pitch::Bsharp),
+            "B#" => Ok(Pitch::Bsharp),
             _ => Err(()),
         }
     }
@@ -247,5 +286,35 @@ mod tests {
 
         let fsharp_ton = TONALITIES.last().unwrap();
         assert_eq!(fsharp_ton.to_string(), "F#maj");
+    }
+
+    #[test]
+    fn parse_note_from_str() {
+        let note: Note = "C4".parse().unwrap();
+        assert_eq!(
+            note,
+            Note {
+                octave: Octave::First,
+                pitch: Pitch::C,
+            }
+        );
+
+        let note: Note = "F#4".parse().unwrap();
+        assert_eq!(
+            note,
+            Note {
+                octave: Octave::First,
+                pitch: Pitch::Fsharp,
+            }
+        );
+    }
+
+    #[test]
+    fn parse_tonality_from_str() {
+        let tonality: Tonality = "Cmaj".parse().unwrap();
+        assert_eq!(tonality, Tonality(Pitch::C));
+
+        let tonality: Tonality = "C#maj".parse().unwrap();
+        assert_eq!(tonality, Tonality(Pitch::Csharp));
     }
 }

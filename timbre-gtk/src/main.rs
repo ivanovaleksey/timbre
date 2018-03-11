@@ -38,7 +38,7 @@ impl App {
 
         let content = Content::new(&controller);
         let menu_bar = gtk::MenuBar::new();
-        menu_bar.append(&build_game_menu(&window, &content));
+        menu_bar.append(&build_game_menu(&window, &content, &controller));
         menu_bar.append(&build_control_menu(&window));
 
         let v_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -110,11 +110,11 @@ fn build_window(
     window.connect_delete_event({
         clone!(controller, window);
         move |_, _| {
-            let game = controller.borrow().save_game();
-
             if controller.borrow().is_finished() {
                 window.destroy();
             } else {
+                controller.borrow().save_state();
+
                 let dialog = gtk::MessageDialog::new(
                     Some(&window),
                     gtk::DialogFlags::DESTROY_WITH_PARENT,
@@ -122,9 +122,9 @@ fn build_window(
                     gtk::ButtonsType::YesNo,
                     &format!("Save game?"),
                 );
-                let yes: i32 = gtk::ResponseType::Yes.into();
-                if dialog.run() == yes {
-                    controller.borrow().save_state(game);
+                let no: i32 = gtk::ResponseType::No.into();
+                if dialog.run() == no {
+                    controller.borrow().finish_game();
                 }
                 dialog.destroy();
             }
@@ -146,7 +146,11 @@ macro_rules! build_menu {
     }}
 }
 
-fn build_game_menu(window: &gtk::ApplicationWindow, content: &Content) -> gtk::MenuItem {
+fn build_game_menu(
+    window: &gtk::ApplicationWindow,
+    content: &Content,
+    controller: &octaves::SharedController,
+) -> gtk::MenuItem {
     let new = gtk::MenuItem::new_with_mnemonic("_New");
     let load = gtk::MenuItem::new_with_mnemonic("_Load");
     let save = gtk::MenuItem::new_with_mnemonic("_Save");
@@ -164,7 +168,48 @@ fn build_game_menu(window: &gtk::ApplicationWindow, content: &Content) -> gtk::M
         }
     });
 
-    // TODO: prompt to save the game
+    load.connect_activate({
+        clone!(controller, window);
+        let revealer = content.revealer.clone();
+        let start_btn = content.start_btn.clone();
+        let ton_combo = content.tonality_combo.clone();
+
+        move |_| {
+            let game_state = controller.borrow_mut().load_game();
+            let msg: &str = match game_state {
+                Some(ref s) => {
+                    revealer.set_reveal_child(true);
+                    start_btn.set_sensitive(false);
+                    ton_combo.set_sensitive(false);
+
+                    let tonality = s.tonality.parse::<octaves::note::Tonality>().unwrap();
+                    let ton_idx: i32 = octaves::note::TONALITIES
+                        .iter()
+                        .position(|&t| t == tonality)
+                        .unwrap() as i32;
+                    ton_combo.set_active(ton_idx);
+
+                    controller.borrow().play_tonal_center();
+
+                    "Game is loaded"
+                }
+                None => "Game not found",
+            };
+
+            let dialog = gtk::MessageDialog::new(
+                Some(&window),
+                gtk::DialogFlags::MODAL,
+                gtk::MessageType::Info,
+                gtk::ButtonsType::Ok,
+                msg,
+            );
+            let ok: i32 = gtk::ResponseType::Ok.into();
+            if dialog.run() == ok {
+                dialog.close();
+            }
+        }
+    });
+
     quit.connect_activate({
         clone!(window);
         move |_| window.close()
